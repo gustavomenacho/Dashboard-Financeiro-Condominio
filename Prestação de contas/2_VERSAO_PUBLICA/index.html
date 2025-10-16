@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prestação de Contas do Edifico __________</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header>
+    <h1>Prestação de Contas do Edifico __________</h1>
+    <h2 id="mes-referencia">Referência: Carregando...</h2>
+  </header>
+  <main>
+    <p>
+      Prezados condôminos, segue abaixo o demonstrativo financeiro referente ao mês corrente.
+    </p>
+    <section class="resumo">
+      <div class="card">
+        <h3>Saldo Anterior</h3>
+        <p id="saldo-anterior" class="verde">R$ 0,00</p>
+      </div>
+      <div class="card">
+        <h3>Total de Receitas (Entradas)</h3>
+        <p id="total-receitas" class="verde">R$ 0,00</p>
+      </div>
+      <div class="card">
+        <h3>Total de Despesas (Saídas)</h3>
+        <p id="total-despesas" class="vermelho">R$ 0,00</p>
+      </div>
+      <div class="card">
+        <h3>Saldo Atual (Final)</h3>
+        <p id="saldo-atual" class="azul">R$ 0,00</p>
+      </div>
+    </section>
+    <section>
+      <h3>Receitas</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Descrição</th>
+            <th>Valor (R$)</th>
+          </tr>
+        </thead>
+        <tbody id="receitas-tbody"></tbody>
+      </table>
+    </section>
+    <section>
+      <h3>Despesas</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Descrição</th>
+            <th>Categoria</th>
+            <th>Valor (R$)</th>
+          </tr>
+        </thead>
+        <tbody id="despesas-tbody"></tbody>
+      </table>
+    </section>
+  </main>
+  <footer>
+    Em caso de dúvidas, entre em contato com (Nome) - (Telefone) - Síndico
+  </footer>
+  <script src="script-publico.js"></script>
+</body>
+</html>
