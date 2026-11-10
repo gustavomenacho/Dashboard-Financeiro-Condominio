@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Testes · Livro-Caixa</title>
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    try {
+      const tema = localStorage.getItem('livro-caixa:tema');
+      if (tema === 'claro' || tema === 'escuro') document.documentElement.dataset.tema = tema;
+    } catch { /* segue o tema do sistema */ }
+  </script>
+  <style>
+    .resumo-testes { font-size: 1.15rem; font-weight: 600; margin-bottom: 1.5rem; }
+    .resumo-testes.entrada { color: var(--entrada); }
+    .resumo-testes.saida { color: var(--saida); }
+    .grupo-teste { margin-bottom: 1.75rem; }
+    .grupo-teste h2 { font-size: 1.15rem; }
+    .grupo-teste ul { list-style: none; display: grid; gap: .35rem; }
+    .grupo-teste li { display: grid; grid-template-columns: 1.5rem 1fr; gap: .5rem; }
+    .grupo-teste .ok { color: var(--entrada); font-weight: 600; }
+    .grupo-teste .falha { color: var(--saida); font-weight: 600; }
+    .grupo-teste .detalhe { grid-column: 2; color: var(--saida); font-family: var(--mono); font-size: .85rem; }
+  </style>
+</head>
+
+<body>
+  <header class="capa">
+    <p class="marca"><img src="img/logo.svg" alt="" width="36" height="36"><span>Livro-Caixa</span></p>
+    <h1>Testes automatizados</h1>
+    <p class="subtitulo">As funções de contas.js, dados.js e relatorio.js</p>
+  </header>
+
+  <main class="folha" id="conteudo">
+    <p class="resumo-testes" id="resumo" role="status">Rodando…</p>
+    <div id="resultados"></div>
+    <p class="nota"><a href="index.html">Voltar para o Livro-Caixa</a></p>
+  </main>
+
+  <script src="js/contas.js"></script>
+  <script src="js/dados.js"></script>
+  <script src="js/relatorio.js"></script>
+  <script>
+    /* ========================================================
+       Um "mini framework" de testes em poucas linhas:
+       teste() roda uma função e anota se ela lançou erro;
+       igual() lança erro quando o resultado não é o esperado.
+       ======================================================== */
+    const grupos = [];
+    let grupoAtual;
+
+    function grupo(nome, definir) {
+      grupoAtual = { nome, testes: [] };
+      grupos.push(grupoAtual);
+      definir();
+    }
+
+    function teste(nome, executar) {
+      try {
+        executar();
+        grupoAtual.testes.push({ nome, ok: true });
+      } catch (erro) {
+        grupoAtual.testes.push({ nome, ok: false, erro: erro.message });
+      }
+    }
+
+    function igual(recebido, esperado) {
+      const a = JSON.stringify(recebido);
+      const b = JSON.stringify(esperado);
+      if (a !== b) throw new Error(`esperava ${b}, recebeu ${a}`);
+    }
+
+    function verdadeiro(condicao, mensagem) {
+      if (!condicao) throw new Error(mensagem);
+    }
+
+    /* O navegador usa um espaço especial (não separável) em "R$ 1,00" */
+    const reais = (centavos) => formatarReais(centavos).replace(/\s/g, ' ');
+
+    /* Um mês pequeno, usado em vários testes */
+    function mesDeTeste() {
+      return {
+        condominio: 'Edifício Teste',
+        sindico: 'Síndica Teste',
+        contato: 'teste@exemplo',
+        mes: '2025-08',
+        saldoAnterior: 10000,
+        recado: '',
+        unidades: [
+          { id: 'a', nome: '101', taxa: 50000 },
+          { id: 'b', nome: '102', taxa: 50000 },
+          { id: 'c', nome: '201', taxa: 45000 }
+        ],
+        entradas: [
+          { id: 'e1', data: '2025-08-05', descricao: 'Taxa condominial · Unidade 101', valor: 50000, unidadeId: 'a' },
+          { id: 'e2', data: '2025-08-06', descricao: 'Taxa condominial · Unidade 102', valor: 50000, unidadeId: 'b' },
+          { id: 'e3', data: '2025-08-10', descricao: 'Aluguel do salão', valor: 15000 }
+        ],
+        saidas: [
+          { id: 's1', data: '2025-08-02', descricao: 'Energia', categoria: 'Contas fixas', valor: 20000 },
+          { id: 's2', data: '2025-08-03', descricao: 'Água', categoria: 'Contas fixas', valor: 5000 },
+          { id: 's3', data: '2025-08-04', descricao: 'Jardinagem', categoria: 'Manutenção', valor: 30000 }
+        ]
+      };
+    }
+
+    /* ========================================================
+       OS TESTES
+       ======================================================== */
+
+    grupo('lerValor: o que o síndico digita vira centavos', () => {
+      teste('"50,50" vira 5050', () => igual(lerValor('50,50'), 5050));
+      teste('"1.234,56" vira 123456', () => igual(lerValor('1.234,56'), 123456));
+      teste('"50.50" (ponto decimal) vira 5050', () => igual(lerValor('50.50'), 5050));
+      teste('"1.234" (ponto de milhar) vira 123400', () => igual(lerValor('1.234'), 123400));
+      teste('"R$ 80" vira 8000', () => igual(lerValor('R$ 80'), 8000));
+      teste('"50,5" vira 5050', () => igual(lerValor('50,5'), 5050));
+      teste('texto inválido devolve null', () => igual(lerValor('abc'), null));
+      teste('campo vazio devolve null', () => igual(lerValor(''), null));
+      teste('três casas decimais devolve null', () => igual(lerValor('10,999'), null));
+      teste('negativo só quando permitido', () => {
+        igual(lerValor('-5'), null);
+        igual(lerValor('-1.500,00', { permitirNegativo: true }), -150000);
+      });
+    });
+
+    grupo('Dinheiro e datas', () => {
+      teste('formatarReais(123456) é "R$ 1.234,56"', () => igual(reais(123456), 'R$ 1.234,56'));
+      teste('valorParaCampo(2550) é "25,50"', () => igual(valorParaCampo(2550), '25,50'));
+      teste('somar centavos não tem erro de ponto flutuante', () => {
+        igual(somar([{ valor: 10 }, { valor: 20 }]), 30);   // em reais seria 0.1 + 0.2 = 0.30000000000000004
+      });
+      teste('formatarData("2025-08-02") é "02/08/2025"', () => igual(formatarData('2025-08-02'), '02/08/2025'));
+      teste('nomeDoMes("2025-08") é "agosto de 2025"', () => igual(nomeDoMes('2025-08'), 'agosto de 2025'));
+      teste('proximoMes vira o ano em dezembro', () => igual(proximoMes('2025-12'), '2026-01'));
+      teste('fevereiro de ano bissexto vai até o dia 29', () => igual(limitesDoMes('2024-02'), { min: '2024-02-01', max: '2024-02-29' }));
+      teste('ordenarPorData não altera a lista original', () => {
+        const lista = [{ data: '2025-08-10' }, { data: '2025-08-01' }];
+        igual(ordenarPorData(lista).map((i) => i.data), ['2025-08-01', '2025-08-10']);
+        igual(lista[0].data, '2025-08-10');
+      });
+    });
+
+    grupo('Totais e categorias', () => {
+      teste('saldo final = anterior + entradas − saídas', () => {
+        igual(calcularTotais(mesDeTeste()), { entradas: 115000, saidas: 55000, saldoFinal: 70000 });
+      });
+      teste('categorias somadas, da maior para a menor, com percentual', () => {
+        const resultado = totaisPorCategoria(mesDeTeste().saidas)
+          .map((c) => [c.categoria, c.valor, Math.round(c.percentual)]);
+        igual(resultado, [['Manutenção', 30000, 55], ['Contas fixas', 25000, 45]]);
+      });
+      teste('sem saídas, nenhuma categoria', () => igual(totaisPorCategoria([]), []));
+    });
+
+    grupo('Unidades', () => {
+      teste('paga = tem entrada ligada a ela', () => {
+        const s = situacaoDasUnidades(mesDeTeste());
+        igual([s.total, s.pagas, s.pendentes, s.valorPendente], [3, 2, 1, 45000]);
+      });
+      teste('excluir a entrada deixa a unidade pendente', () => {
+        const mes = mesDeTeste();
+        mes.entradas = mes.entradas.filter((e) => e.unidadeId !== 'a');
+        igual(situacaoDasUnidades(mes).pagas, 1);
+      });
+      teste('unidades em ordem numérica (9, 10, 101)', () => {
+        const ordem = ordenarUnidades([{ nome: '101' }, { nome: '10' }, { nome: '9' }]).map((u) => u.nome);
+        igual(ordem, ['9', '10', '101']);
+      });
+    });
+
+    grupo('Segurança: escaparHTML', () => {
+      teste('tags viram texto', () => {
+        igual(escaparHTML('<img src=x onerror=alert(1)>'), '&lt;img src=x onerror=alert(1)&gt;');
+      });
+      teste('aspas e & também são escapados', () => igual(escaparHTML(`"a" & 'b'`), '&quot;a&quot; &amp; &#39;b&#39;'));
+    });
+
+    grupo('Relatório público', () => {
+      const html = gerarRelatorioHTML(mesDeTeste());
+
+      teste('não tem nenhum <script>', () => verdadeiro(!/<script/i.test(html), 'encontrou <script> no relatório'));
+      teste('descrição maliciosa aparece escapada', () => {
+        const mes = mesDeTeste();
+        mes.saidas[0].descricao = '<img src=x onerror=alert(1)>';
+        const rel = gerarRelatorioHTML(mes);
+        verdadeiro(!rel.includes('<img src=x'), 'a tag passou sem escape');
+        verdadeiro(rel.includes('&lt;img src=x'), 'o texto escapado não apareceu');
+      });
+      teste('não identifica nenhuma unidade (nem as pagas)', () => {
+        verdadeiro(!/Unidade 10\d|Unidade 201/.test(html), 'o relatório cita uma unidade');
+      });
+      teste('taxas pagas aparecem somadas numa linha', () => {
+        verdadeiro(html.includes('Taxas condominiais (2 unidades)'), 'linha somada não encontrada');
+        verdadeiro(html.includes('2 de 3'), 'placar "2 de 3" não encontrado');
+      });
+      teste('sem recado, sem caixa de recado', () => verdadeiro(!html.includes('class="recado"'), 'caixa de recado vazia apareceu'));
+      teste('recado aparece escapado', () => {
+        const mes = mesDeTeste();
+        mes.recado = 'Obra <b>dia 10</b>';
+        verdadeiro(gerarRelatorioHTML(mes).includes('Obra &lt;b&gt;dia 10&lt;/b&gt;'), 'recado não escapado');
+      });
+      teste('saldo negativo troca o carimbo', () => {
+        const mes = mesDeTeste();
+        mes.saldoAnterior = -100000;
+        verdadeiro(gerarRelatorioHTML(mes).includes('Saldo negativo'), 'carimbo de saldo negativo não apareceu');
+      });
+    });
+
+    grupo('dados.js: leitura segura', () => {
+      const valido = { ...mesDeTeste(), historico: [mesDeTeste()] };
+
+      teste('aceita um estado válido', () => verdadeiro(lerEstado(valido) !== null, 'recusou um estado válido'));
+      teste('recusa mês em formato errado', () => igual(lerEstado({ ...valido, mes: 'agosto' }), null));
+      teste('recusa valor que não é inteiro', () => {
+        const ruim = structuredClone(valido);
+        ruim.saidas[0].valor = '200';
+        igual(lerEstado(ruim), null);
+      });
+      teste('recusa um mês inválido no histórico', () => igual(lerEstado({ ...valido, historico: [{}] }), null));
+      teste('descarta campos desconhecidos', () => {
+        const extra = structuredClone(valido);
+        extra.entradas[2].perigo = '<script>';
+        verdadeiro(!('perigo' in lerEstado(extra).entradas[2]), 'campo desconhecido foi copiado');
+      });
+      teste('aceita dados da versão antiga (sem unidades, recado e histórico)', () => {
+        const antigo = mesDeTeste();
+        delete antigo.unidades;
+        delete antigo.recado;
+        const lido = lerEstado(antigo);
+        igual([lido.unidades, lido.recado, lido.historico], [[], '', []]);
+      });
+      teste('recusa null e lixo', () => {
+        igual(lerEstado(null), null);
+        igual(lerEstado('texto'), null);
+      });
+    });
+
+    /* ========================================================
+       MOSTRAR O RESULTADO
+       ======================================================== */
+    const todos = grupos.flatMap((g) => g.testes);
+    const falhas = todos.filter((t) => !t.ok).length;
+    const resumo = document.getElementById('resumo');
+    resumo.textContent = falhas
+      ? `${falhas} de ${todos.length} testes falharam.`
+      : `Todos os ${todos.length} testes passaram.`;
+    resumo.className = `resumo-testes ${falhas ? 'saida' : 'entrada'}`;
+    document.title = `${falhas ? '✗' : '✓'} ${todos.length - falhas}/${todos.length} · Testes · Livro-Caixa`;
+
+    const destino = document.getElementById('resultados');
+    grupos.forEach((g) => {
+      const secao = document.createElement('section');
+      secao.className = 'bloco grupo-teste';
+      const titulo = document.createElement('h2');
+      titulo.textContent = g.nome;
+      const lista = document.createElement('ul');
+      g.testes.forEach((t) => {
+        const li = document.createElement('li');
+        const marca = document.createElement('span');
+        marca.className = t.ok ? 'ok' : 'falha';
+        marca.textContent = t.ok ? '✓' : '✗';
+        marca.setAttribute('aria-label', t.ok ? 'passou' : 'falhou');
+        const nome = document.createElement('span');
+        nome.textContent = t.nome;
+        li.append(marca, nome);
+        if (!t.ok) {
+          const detalhe = document.createElement('span');
+          detalhe.className = 'detalhe';
+          detalhe.textContent = t.erro;
+          li.append(detalhe);
+        }
+        lista.append(li);
+      });
+      secao.append(titulo, lista);
+      destino.append(secao);
+    });
+  </script>
+</body>
+
+</html>

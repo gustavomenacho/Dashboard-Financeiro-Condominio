@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Livro-Caixa: o síndico lança as entradas e saídas do mês e gera a prestação de contas para os moradores.">
+  <title>Livro-Caixa · Prestação de contas do condomínio</title>
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    /* Aplica o tema salvo ANTES de desenhar a página, para não piscar claro e depois escuro */
+    try {
+      const tema = localStorage.getItem('livro-caixa:tema');
+      if (tema === 'claro' || tema === 'escuro') document.documentElement.dataset.tema = tema;
+    } catch { /* sem localStorage: segue o tema do sistema */ }
+  </script>
+</head>
+
+<body>
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="capa">
+    <button type="button" class="btn-tema" id="btn-tema" aria-pressed="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path id="icone-tema" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+      </svg>
+      <span id="texto-tema">Tema escuro</span>
+    </button>
+    <p class="marca">
+      <img src="img/logo.svg" alt="" width="36" height="36">
+      <span>Livro-Caixa</span>
+    </p>
+    <h1 id="titulo-condominio">Seu condomínio</h1>
+    <p class="subtitulo" id="subtitulo-mes">Balancete do mês</p>
+  </header>
+
+  <main class="folha" id="conteudo">
+
+    <!-- 1. Dados que aparecem no cabeçalho do relatório -->
+    <section class="bloco" aria-labelledby="h-abertura">
+      <h2 id="h-abertura"><span class="folio">fl. 01</span> Termo de abertura</h2>
+      <form id="form-abertura" class="abertura" novalidate>
+        <div class="campo">
+          <label for="campo-condominio">Condomínio</label>
+          <input id="campo-condominio" name="condominio" type="text" maxlength="80" autocomplete="off">
+        </div>
+        <div class="campo">
+          <label for="campo-mes">Mês de referência</label>
+          <input id="campo-mes" name="mes" type="month" required>
+        </div>
+        <div class="campo">
+          <label for="campo-saldo">Saldo anterior (R$)</label>
+          <input id="campo-saldo" name="saldoAnterior" type="text" inputmode="decimal" aria-describedby="erro-saldo">
+          <p class="erro" id="erro-saldo"></p>
+        </div>
+        <div class="campo">
+          <label for="campo-sindico">Síndico(a)</label>
+          <input id="campo-sindico" name="sindico" type="text" maxlength="60" autocomplete="off">
+        </div>
+        <div class="campo">
+          <label for="campo-contato">Contato para dúvidas</label>
+          <input id="campo-contato" name="contato" type="text" maxlength="80" autocomplete="off">
+        </div>
+      </form>
+    </section>
+
+    <!-- 2. Resumo: saldo anterior + entradas − saídas = saldo final -->
+    <section class="bloco" aria-labelledby="h-termo">
+      <h2 id="h-termo"><span class="folio">fl. 02</span> Resumo do mês</h2>
+      <div class="resumo">
+        <dl class="termo">
+          <div class="termo-linha">
+            <dt>Saldo anterior</dt>
+            <dd id="resumo-anterior">R$ 0,00</dd>
+          </div>
+          <div class="termo-linha entrada">
+            <dt><span aria-hidden="true">(+)</span> Entradas</dt>
+            <dd id="resumo-entradas">R$ 0,00</dd>
+          </div>
+          <div class="termo-linha saida">
+            <dt><span aria-hidden="true">(−)</span> Saídas</dt>
+            <dd id="resumo-saidas">R$ 0,00</dd>
+          </div>
+          <div class="termo-linha final">
+            <dt><span aria-hidden="true">(=)</span> Saldo final</dt>
+            <dd id="resumo-final">R$ 0,00</dd>
+          </div>
+        </dl>
+        <p class="carimbo" id="carimbo">Contas em dia</p>
+      </div>
+    </section>
+
+    <!-- 3. Taxas por unidade: marcar "paga" cria a entrada sozinho -->
+    <section class="bloco" aria-labelledby="h-unidades">
+      <div class="bloco-topo">
+        <h2 id="h-unidades"><span class="folio">fl. 03</span> Taxas das unidades</h2>
+        <button type="button" class="btn" id="btn-nova-unidade">+ Cadastrar unidade</button>
+      </div>
+      <p class="placar" id="placar-unidades" aria-live="polite"></p>
+      <table class="livro unidades">
+        <caption class="sr-only">Unidades e situação da taxa do mês</caption>
+        <thead>
+          <tr>
+            <th scope="col">Unidade</th>
+            <th scope="col" class="num">Taxa</th>
+            <th scope="col">Situação</th>
+            <th scope="col"><span class="sr-only">Ações</span></th>
+          </tr>
+        </thead>
+        <tbody id="tbody-unidades"></tbody>
+      </table>
+      <p class="nota">Marcar uma unidade como paga lança a taxa nas entradas. No relatório, as taxas
+        aparecem somadas e só se diz quantas unidades estão em dia, sem identificar nenhuma.</p>
+    </section>
+
+    <!-- 4. Entradas -->
+    <section class="bloco" aria-labelledby="h-entradas">
+      <div class="bloco-topo">
+        <h2 id="h-entradas"><span class="folio">fl. 04</span> Entradas</h2>
+        <button type="button" class="btn" id="btn-nova-entrada">+ Lançar entrada</button>
+      </div>
+      <table class="livro">
+        <caption class="sr-only">Entradas do mês</caption>
+        <thead>
+          <tr>
+            <th scope="col">Data</th>
+            <th scope="col">Descrição</th>
+            <th scope="col" class="num">Valor</th>
+            <th scope="col"><span class="sr-only">Ações</span></th>
+          </tr>
+        </thead>
+        <tbody id="tbody-entradas"></tbody>
+        <tfoot>
+          <tr>
+            <th scope="row" colspan="2">Total das entradas</th>
+            <td class="num entrada" id="total-entradas">R$ 0,00</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </section>
+
+    <!-- 5. Saídas -->
+    <section class="bloco" aria-labelledby="h-saidas">
+      <div class="bloco-topo">
+        <h2 id="h-saidas"><span class="folio">fl. 05</span> Saídas</h2>
+        <button type="button" class="btn" id="btn-nova-saida">+ Lançar saída</button>
+      </div>
+      <table class="livro">
+        <caption class="sr-only">Saídas do mês</caption>
+        <thead>
+          <tr>
+            <th scope="col">Data</th>
+            <th scope="col">Descrição</th>
+            <th scope="col">Categoria</th>
+            <th scope="col" class="num">Valor</th>
+            <th scope="col"><span class="sr-only">Ações</span></th>
+          </tr>
+        </thead>
+        <tbody id="tbody-saidas"></tbody>
+        <tfoot>
+          <tr>
+            <th scope="row" colspan="3">Total das saídas</th>
+            <td class="num saida" id="total-saidas">R$ 0,00</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </section>
+
+    <!-- 6. Para onde foi o dinheiro -->
+    <section class="bloco" aria-labelledby="h-categorias">
+      <h2 id="h-categorias"><span class="folio">fl. 06</span> Para onde foi o dinheiro</h2>
+      <ul class="categorias" id="lista-categorias"></ul>
+    </section>
+
+    <!-- 7. Recado que sai no relatório -->
+    <section class="bloco" aria-labelledby="h-recado">
+      <h2 id="h-recado"><span class="folio">fl. 07</span> Recado do síndico</h2>
+      <div class="campo">
+        <label for="campo-recado">Aparece no relatório, logo depois da introdução (opcional)</label>
+        <textarea id="campo-recado" rows="4" maxlength="600" aria-describedby="contador-recado"
+          placeholder="Ex.: A limpeza da caixa d’água será no dia 12, das 8h às 12h."></textarea>
+        <p class="dica" id="contador-recado">0 de 600 caracteres</p>
+      </div>
+    </section>
+
+    <!-- 8. Meses fechados -->
+    <section class="bloco" aria-labelledby="h-historico">
+      <h2 id="h-historico"><span class="folio">fl. 08</span> Histórico</h2>
+      <h3 class="subtitulo-bloco" id="h-grafico">Saldo final mês a mês</h3>
+      <ul class="grafico-saldo" id="grafico-saldo" aria-labelledby="h-grafico"></ul>
+      <table class="livro historico">
+        <caption class="sr-only">Meses fechados</caption>
+        <thead>
+          <tr>
+            <th scope="col">Mês</th>
+            <th scope="col" class="num">Entradas</th>
+            <th scope="col" class="num">Saídas</th>
+            <th scope="col" class="num">Saldo final</th>
+            <th scope="col"><span class="sr-only">Relatório</span></th>
+          </tr>
+        </thead>
+        <tbody id="tbody-historico"></tbody>
+      </table>
+    </section>
+
+    <!-- 9. Publicação e cópia de segurança -->
+    <section class="bloco publicar" aria-labelledby="h-publicar">
+      <h2 id="h-publicar"><span class="folio">fl. 09</span> Termo de encerramento</h2>
+      <p>
+        Tudo conferido? Gere o relatório: é um arquivo <strong>.html</strong> único, só de leitura,
+        que abre em qualquer celular. Dá para mandar no grupo do prédio ou imprimir em PDF.
+      </p>
+      <div class="acoes-publicar">
+        <button type="button" class="btn" id="btn-baixar">Baixar relatório</button>
+        <button type="button" class="btn btn-secundario" id="btn-ver">Ver relatório</button>
+      </div>
+      <div class="acoes-publicar">
+        <button type="button" class="btn btn-secundario" id="btn-fechar-mes">Fechar o mês</button>
+      </div>
+      <p class="nota">Fechar o mês guarda o mês no histórico e abre o seguinte com o saldo final.</p>
+
+      <h3 class="subtitulo-bloco">Cópia de segurança</h3>
+      <p>
+        Os dados ficam salvos só neste navegador. Salve uma cópia de vez em quando: com ela você
+        recupera tudo, inclusive o histórico, em outro computador.
+      </p>
+      <div class="acoes-publicar">
+        <button type="button" class="btn btn-secundario" id="btn-salvar-copia">Salvar cópia (.json)</button>
+        <button type="button" class="btn btn-secundario" id="btn-abrir-copia">Abrir cópia</button>
+        <input type="file" id="arquivo-copia" accept=".json,application/json" hidden>
+        <button type="button" class="btn btn-perigo" id="btn-exemplo">Restaurar exemplo</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    Livro-Caixa · projeto de portfólio de
+    <a href="https://github.com/gustavomenacho">Gustavo Menacho</a> · condomínio e valores fictícios
+  </footer>
+
+  <!-- Ficha de lançamento (entrada ou saída) -->
+  <dialog class="ficha" id="dlg-lancamento" aria-labelledby="dlg-titulo">
+    <form id="form-lancamento" novalidate>
+      <h2 id="dlg-titulo">Nova entrada</h2>
+
+      <div class="campo">
+        <label for="lanc-data">Data</label>
+        <input id="lanc-data" name="data" type="date" required aria-describedby="erro-data">
+        <p class="erro" id="erro-data"></p>
+      </div>
+      <div class="campo">
+        <label for="lanc-descricao">Descrição</label>
+        <input id="lanc-descricao" name="descricao" type="text" maxlength="120" required autocomplete="off"
+          aria-describedby="erro-descricao">
+        <p class="erro" id="erro-descricao"></p>
+      </div>
+      <div class="campo" id="grupo-categoria">
+        <label for="lanc-categoria">Categoria</label>
+        <input id="lanc-categoria" name="categoria" type="text" maxlength="40" list="sugestoes-categoria"
+          autocomplete="off" aria-describedby="dica-categoria erro-categoria">
+        <datalist id="sugestoes-categoria"></datalist>
+        <p class="dica" id="dica-categoria">Escolha uma sugestão ou digite uma nova.</p>
+        <p class="erro" id="erro-categoria"></p>
+      </div>
+      <div class="campo">
+        <label for="lanc-valor">Valor (R$)</label>
+        <input id="lanc-valor" name="valor" type="text" inputmode="decimal" required placeholder="0,00"
+          aria-describedby="erro-valor">
+        <p class="erro" id="erro-valor"></p>
+      </div>
+
+      <div class="ficha-acoes">
+        <button type="button" class="btn btn-secundario" id="btn-cancelar-lancamento">Cancelar</button>
+        <button type="submit" class="btn">Salvar lançamento</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Ficha de unidade -->
+  <dialog class="ficha" id="dlg-unidade" aria-labelledby="unidade-titulo">
+    <form id="form-unidade" novalidate>
+      <h2 id="unidade-titulo">Nova unidade</h2>
+      <div class="campo">
+        <label for="unid-nome">Unidade</label>
+        <input id="unid-nome" type="text" maxlength="20" required autocomplete="off" placeholder="Ex.: 101 ou Casa 3"
+          aria-describedby="erro-unid-nome">
+        <p class="erro" id="erro-unid-nome"></p>
+      </div>
+      <div class="campo">
+        <label for="unid-taxa">Taxa mensal (R$)</label>
+        <input id="unid-taxa" type="text" inputmode="decimal" required placeholder="0,00"
+          aria-describedby="erro-unid-taxa">
+        <p class="erro" id="erro-unid-taxa"></p>
+      </div>
+      <div class="ficha-acoes">
+        <button type="button" class="btn btn-secundario" id="btn-cancelar-unidade">Cancelar</button>
+        <button type="submit" class="btn">Salvar unidade</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Confirmação genérica -->
+  <dialog class="ficha" id="dlg-confirmar" aria-labelledby="confirmar-titulo" aria-describedby="confirmar-texto">
+    <form method="dialog">
+      <h2 id="confirmar-titulo">Tem certeza?</h2>
+      <p id="confirmar-texto"></p>
+      <div class="ficha-acoes">
+        <button type="submit" value="nao" class="btn btn-secundario" autofocus>Cancelar</button>
+        <button type="submit" value="sim" class="btn btn-perigo" id="confirmar-sim">Confirmar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <p class="aviso" id="aviso" role="status" aria-live="polite"></p>
+
+  <script src="js/contas.js"></script>
+  <script src="js/dados.js"></script>
+  <script src="js/relatorio.js"></script>
+  <script src="js/app.js"></script>
+</body>
+
+</html>
