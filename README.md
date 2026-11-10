@@ -9,13 +9,14 @@
 O síndico lança as entradas e saídas do mês, confere o saldo e gera um relatório só de leitura para enviar aos condôminos.<br>
 Feito com **HTML, CSS e JavaScript puro**, sem frameworks, sem bibliotecas e sem etapa de build.
 
-[Recursos](#-recursos) · [Como rodar](#-como-rodar) · [Decisões técnicas](#-decisões-técnicas) · [Testes](#-testes) · [Limitações](#-limitações-e-próximos-passos) · [Uso de IA](#-uso-de-ia) · [Autor](#-autor)
+[**🌐 Ver o site no ar**](https://livro-caixa-condominio.netlify.app) · [Testes no ar](https://livro-caixa-condominio.netlify.app/testes.html) · [Recursos](#-recursos) · [Como rodar](#-como-rodar) · [Decisões técnicas](#-decisões-técnicas) · [Testes](#-testes) · [Limitações](#-limitações-e-próximos-passos) · [Uso de IA](#-uso-de-ia) · [Autor](#-autor)
 
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript_ES6+-F7DF1E?style=flat&logo=javascript&logoColor=black)
 ![Sem frameworks](https://img.shields.io/badge/frameworks-0-success?style=flat)
 ![localStorage](https://img.shields.io/badge/dados-localStorage-6b4226?style=flat)
+![Netlify](https://img.shields.io/badge/deploy-Netlify-00C7B7?style=flat&logo=netlify&logoColor=white)
 
 </div>
 
@@ -103,7 +104,9 @@ A primeira versão deste projeto tinha duas pastas separadas, e para publicar o 
 
 ## 🚀 Como rodar
 
-Não há dependências nem etapa de build: o código do repositório é o código que roda no navegador.
+Para só conhecer, abra o [site no ar](https://livro-caixa-condominio.netlify.app): ele é publicado pelo Netlify, que atualiza o site sozinho a cada `git push` na `main`.
+
+Para rodar no seu computador, não há dependências nem etapa de build: o código do repositório é o código que roda no navegador.
 
 ```bash
 git clone https://github.com/gustavomenacho/Dashboard-Financeiro-Condominio.git
