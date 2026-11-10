@@ -138,6 +138,9 @@
       teste('nomeDoMes("2025-08") é "agosto de 2025"', () => igual(nomeDoMes('2025-08'), 'agosto de 2025'));
       teste('proximoMes vira o ano em dezembro', () => igual(proximoMes('2025-12'), '2026-01'));
       teste('fevereiro de ano bissexto vai até o dia 29', () => igual(limitesDoMes('2024-02'), { min: '2024-02-01', max: '2024-02-29' }));
+      teste('busca ignora acentos e maiúsculas', () => {
+        igual(normalizarTexto('  Manutenção '), 'manutencao');
+      });
       teste('ordenarPorData não altera a lista original', () => {
         const lista = [{ data: '2025-08-10' }, { data: '2025-08-01' }];
         igual(ordenarPorData(lista).map((i) => i.data), ['2025-08-01', '2025-08-10']);

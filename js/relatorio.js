@@ -1,8 +1,7 @@
-/* ==========================================================
-   relatorio.js — monta o relatório público: um arquivo .html
-   ÚNICO, com o CSS embutido e SEM JavaScript. O morador só lê.
-   Todo texto digitado pelo síndico passa por escaparHTML().
-   ========================================================== */
+// relatorio.js
+// Monta o relatório que vai para os moradores: um arquivo .html único,
+// com o CSS dentro dele e sem nenhum JavaScript (o morador só lê).
+// Todo texto digitado pelo síndico passa por escaparHTML().
 
 const CSS_RELATORIO = `
   *{box-sizing:border-box;margin:0;padding:0}
@@ -74,6 +73,99 @@ const CSS_RELATORIO = `
   }
 `;
 
+// As taxas pagas viram UMA linha somada. Se cada uma aparecesse
+// ("Unidade 101", "Unidade 102"...), daria para descobrir quem não pagou.
+function entradasParaRelatorio(mes) {
+  const taxas = mes.entradas.filter((item) => item.unidadeId);
+  const outras = mes.entradas.filter((item) => !item.unidadeId);
+
+  if (taxas.length > 0) {
+    const palavra = taxas.length === 1 ? 'unidade' : 'unidades';
+    outras.push({
+      data: `${mes.mes}-01`,
+      descricao: `Taxas condominiais (${taxas.length} ${palavra})`,
+      valor: somar(taxas),
+      somaDasTaxas: true
+    });
+  }
+  return ordenarPorData(outras);
+}
+
+function linhasDeEntradas(mes) {
+  const entradas = entradasParaRelatorio(mes);
+  if (entradas.length === 0) {
+    return '<tr><td colspan="3" class="vazio">Nenhuma entrada no mês.</td></tr>';
+  }
+  return entradas.map((item) => {
+    // na linha somada mostro só o mês ("08/2025"), porque são várias datas
+    const data = item.somaDasTaxas ? formatarData(item.data).slice(3) : formatarData(item.data);
+    return `
+        <tr>
+          <td class="data">${escaparHTML(data)}</td>
+          <td class="descricao">${escaparHTML(item.descricao)}</td>
+          <td class="num">${escaparHTML(formatarReais(item.valor))}</td>
+        </tr>`;
+  }).join('');
+}
+
+function linhasDeSaidas(mes) {
+  if (mes.saidas.length === 0) {
+    return '<tr><td colspan="4" class="vazio">Nenhuma saída no mês.</td></tr>';
+  }
+  return ordenarPorData(mes.saidas).map((item) => `
+        <tr>
+          <td class="data">${escaparHTML(formatarData(item.data))}</td>
+          <td class="descricao">${escaparHTML(item.descricao)}</td>
+          <td class="categoria">${escaparHTML(item.categoria)}</td>
+          <td class="num">${escaparHTML(formatarReais(item.valor))}</td>
+        </tr>`).join('');
+}
+
+function itensDeCategorias(mes) {
+  const categorias = totaisPorCategoria(mes.saidas);
+  if (categorias.length === 0) {
+    return '<li class="vazio">Nenhuma saída no mês.</li>';
+  }
+  return categorias.map((item) => `
+        <li>
+          <span>${escaparHTML(item.categoria)}</span>
+          <span class="barra" aria-hidden="true"><span style="width:${item.percentual.toFixed(1)}%"></span></span>
+          <span class="num">${escaparHTML(formatarReais(item.valor))} · ${Math.round(item.percentual)}%</span>
+        </li>`).join('');
+}
+
+function blocoDoRecado(mes) {
+  const recado = mes.recado.trim();
+  if (!recado) {
+    return '';
+  }
+  return `<aside class="recado" aria-label="Recado do síndico"><strong>Recado do síndico</strong>${escaparHTML(recado)}</aside>`;
+}
+
+// Só números: o relatório não diz quais unidades estão pendentes,
+// para não expor o morador devedor perante os vizinhos.
+function blocoDasTaxas(mes) {
+  const unidades = situacaoDasUnidades(mes);
+  if (unidades.total === 0) {
+    return '';
+  }
+
+  let emAberto = '<p class="entrada">Nenhuma taxa em aberto.</p>';
+  if (unidades.pendentes > 0) {
+    emAberto = `<p><span class="grande saida">${escaparHTML(formatarReais(unidades.valorPendente))}</span> em aberto</p>`;
+  }
+
+  return `
+    <section aria-labelledby="h-taxas">
+      <h2 id="h-taxas">Taxas condominiais</h2>
+      <div class="taxas">
+        <p><span class="grande">${unidades.pagas} de ${unidades.total}</span> unidades em dia</p>
+        ${emAberto}
+      </div>
+      <p class="nota">Por respeito aos moradores, este relatório não identifica as unidades pendentes nem as pagas.</p>
+    </section>`;
+}
+
 function gerarRelatorioHTML(estado) {
   const e = escaparHTML;
   const totais = calcularTotais(estado);
@@ -81,63 +173,13 @@ function gerarRelatorioHTML(estado) {
   const condominio = estado.condominio.trim() || 'Condomínio';
   const negativo = totais.saldoFinal < 0;
   const hoje = new Date().toLocaleDateString('pt-BR');
-
-  /* As taxas ligadas a unidades viram UMA linha somada. Se cada taxa paga
-     aparecesse ("Unidade 101", "Unidade 102"...), daria para descobrir
-     por eliminação quem não pagou. */
-  const taxasPagas = estado.entradas.filter((i) => i.unidadeId);
-  const entradasDoRelatorio = estado.entradas.filter((i) => !i.unidadeId);
-  if (taxasPagas.length) {
-    entradasDoRelatorio.push({
-      data: `${estado.mes}-01`,
-      descricao: `Taxas condominiais (${taxasPagas.length} ${taxasPagas.length === 1 ? 'unidade' : 'unidades'})`,
-      valor: somar(taxasPagas),
-      agrupada: true
-    });
-  }
-
-  const linhasEntradas = ordenarPorData(entradasDoRelatorio).map((item) => `
-        <tr>
-          <td class="data">${e(item.agrupada ? formatarData(item.data).slice(3) : formatarData(item.data))}</td>
-          <td class="descricao">${e(item.descricao)}</td>
-          <td class="num">${e(formatarReais(item.valor))}</td>
-        </tr>`).join('') || '<tr><td colspan="3" class="vazio">Nenhuma entrada no mês.</td></tr>';
-
-  const linhasSaidas = ordenarPorData(estado.saidas).map((item) => `
-        <tr>
-          <td class="data">${e(formatarData(item.data))}</td>
-          <td class="descricao">${e(item.descricao)}</td>
-          <td class="categoria">${e(item.categoria)}</td>
-          <td class="num">${e(formatarReais(item.valor))}</td>
-        </tr>`).join('') || '<tr><td colspan="4" class="vazio">Nenhuma saída no mês.</td></tr>';
-
-  const categorias = totaisPorCategoria(estado.saidas).map(({ categoria, valor, percentual }) => `
-        <li>
-          <span>${e(categoria)}</span>
-          <span class="barra" aria-hidden="true"><span style="width:${percentual.toFixed(1)}%"></span></span>
-          <span class="num">${e(formatarReais(valor))} · ${Math.round(percentual)}%</span>
-        </li>`).join('') || '<li class="vazio">Nenhuma saída no mês.</li>';
-
   const contato = [estado.sindico.trim(), estado.contato.trim()].filter(Boolean).map(e).join(' · ');
 
-  const recado = estado.recado.trim()
-    ? `<aside class="recado" aria-label="Recado do síndico"><strong>Recado do síndico</strong>${e(estado.recado.trim())}</aside>`
-    : '';
-
-  /* Taxas: só números. O relatório NÃO diz quais unidades estão pendentes,
-     para não expor o morador devedor perante os vizinhos. */
-  const unidades = situacaoDasUnidades(estado);
-  const taxas = unidades.total ? `
-    <section aria-labelledby="h-taxas">
-      <h2 id="h-taxas">Taxas condominiais</h2>
-      <div class="taxas">
-        <p><span class="grande">${unidades.pagas} de ${unidades.total}</span> unidades em dia</p>
-        ${unidades.pendentes
-          ? `<p><span class="grande saida">${e(formatarReais(unidades.valorPendente))}</span> em aberto</p>`
-          : '<p class="entrada">Nenhuma taxa em aberto.</p>'}
-      </div>
-      <p class="nota">Por respeito aos moradores, este relatório não identifica as unidades pendentes nem as pagas.</p>
-    </section>` : '';
+  const linhasEntradas = linhasDeEntradas(estado);
+  const linhasSaidas = linhasDeSaidas(estado);
+  const categorias = itensDeCategorias(estado);
+  const recado = blocoDoRecado(estado);
+  const taxas = blocoDasTaxas(estado);
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">

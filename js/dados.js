@@ -1,59 +1,94 @@
-/* ==========================================================
-   dados.js — leitura segura dos dados (localStorage e cópia .json).
-   Dados de fora podem estar corrompidos, ser de outra versão ou
-   editados à mão: cada campo é conferido e só os campos conhecidos
-   são copiados. Fica separado do app.js para poder ser testado.
-   ========================================================== */
+// dados.js
+// Confere os dados que vêm de fora (localStorage ou cópia .json) antes de usar.
+// Se algo estiver errado, devolve null. Só os campos conhecidos são copiados.
 
-const ehTexto = (v) => typeof v === 'string';
-const ehData = (v) => /^\d{4}-\d{2}-\d{2}$/.test(v);
-const ehMes = (v) => /^\d{4}-\d{2}$/.test(v);
+function ehTexto(valor) {
+  return typeof valor === 'string';
+}
 
-/* Aplica "ler" a cada item; se algum for inválido, a lista toda é inválida */
+function ehData(valor) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(valor);
+}
+
+function ehMes(valor) {
+  return /^\d{4}-\d{2}$/.test(valor);
+}
+
+// Lê cada item com a função "ler". Se um item for inválido, a lista toda é.
 function lerLista(lista, ler) {
-  if (!Array.isArray(lista)) return null;
+  if (!Array.isArray(lista)) {
+    return null;
+  }
   const lidos = lista.map(ler);
   return lidos.includes(null) ? null : lidos;
 }
 
-function lerLancamento(i, comCategoria) {
-  if (!i || !ehTexto(i.id) || !ehData(i.data) || !ehTexto(i.descricao) || !Number.isInteger(i.valor)) return null;
-  if (comCategoria && !ehTexto(i.categoria)) return null;
-  if (i.unidadeId !== undefined && !ehTexto(i.unidadeId)) return null;
-  const item = { id: i.id, data: i.data, descricao: i.descricao, valor: i.valor };
-  if (comCategoria) item.categoria = i.categoria;
-  if (i.unidadeId) item.unidadeId = i.unidadeId;
-  return item;
+function lerLancamento(item, temCategoria) {
+  if (!item || !ehTexto(item.id) || !ehData(item.data) || !ehTexto(item.descricao) || !Number.isInteger(item.valor)) {
+    return null;
+  }
+  if (temCategoria && !ehTexto(item.categoria)) {
+    return null;
+  }
+  if (item.unidadeId !== undefined && !ehTexto(item.unidadeId)) {
+    return null;
+  }
+
+  const lido = { id: item.id, data: item.data, descricao: item.descricao, valor: item.valor };
+  if (temCategoria) {
+    lido.categoria = item.categoria;
+  }
+  if (item.unidadeId) {
+    lido.unidadeId = item.unidadeId;
+  }
+  return lido;
 }
 
-function lerUnidade(u) {
-  if (!u || !ehTexto(u.id) || !ehTexto(u.nome) || !Number.isInteger(u.taxa)) return null;
-  return { id: u.id, nome: u.nome, taxa: u.taxa };
+function lerUnidade(unidade) {
+  if (!unidade || !ehTexto(unidade.id) || !ehTexto(unidade.nome) || !Number.isInteger(unidade.taxa)) {
+    return null;
+  }
+  return { id: unidade.id, nome: unidade.nome, taxa: unidade.taxa };
 }
 
-/* Um mês completo (o atual ou um do histórico) */
-function lerMes(d) {
-  if (!d || !ehTexto(d.condominio) || !ehTexto(d.sindico) || !ehTexto(d.contato) ||
-    !ehMes(d.mes) || !Number.isInteger(d.saldoAnterior)) return null;
-  const entradas = lerLista(d.entradas, (i) => lerLancamento(i, false));
-  const saidas = lerLista(d.saidas, (i) => lerLancamento(i, true));
-  const unidades = lerLista(d.unidades ?? [], lerUnidade);   // versão antiga não tinha unidades
-  if (!entradas || !saidas || !unidades) return null;
+// Um mês completo: o atual ou um do histórico
+function lerMes(mes) {
+  if (!mes || !ehTexto(mes.condominio) || !ehTexto(mes.sindico) || !ehTexto(mes.contato)) {
+    return null;
+  }
+  if (!ehMes(mes.mes) || !Number.isInteger(mes.saldoAnterior)) {
+    return null;
+  }
+
+  const entradas = lerLista(mes.entradas, (item) => lerLancamento(item, false));
+  const saidas = lerLista(mes.saidas, (item) => lerLancamento(item, true));
+  const unidades = lerLista(mes.unidades || [], lerUnidade); // a primeira versão não tinha unidades
+  if (!entradas || !saidas || !unidades) {
+    return null;
+  }
+
   return {
-    condominio: d.condominio,
-    sindico: d.sindico,
-    contato: d.contato,
-    mes: d.mes,
-    saldoAnterior: d.saldoAnterior,
-    recado: ehTexto(d.recado) ? d.recado : '',
+    condominio: mes.condominio,
+    sindico: mes.sindico,
+    contato: mes.contato,
+    mes: mes.mes,
+    saldoAnterior: mes.saldoAnterior,
+    recado: ehTexto(mes.recado) ? mes.recado : '',
     unidades,
     entradas,
     saidas
   };
 }
 
-function lerEstado(d) {
-  const mes = lerMes(d);
-  const historico = lerLista(d?.historico ?? [], lerMes);
-  return mes && historico ? { ...mes, historico } : null;
+function lerEstado(dados) {
+  const mes = lerMes(dados);
+  if (!mes) {
+    return null;
+  }
+  const historico = lerLista(dados.historico || [], lerMes);
+  if (!historico) {
+    return null;
+  }
+  mes.historico = historico;
+  return mes;
 }

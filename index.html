@@ -12,11 +12,15 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="css/style.css">
   <script>
-    /* Aplica o tema salvo ANTES de desenhar a página, para não piscar claro e depois escuro */
+    // Aplica o tema salvo antes de a página aparecer (para não piscar)
     try {
       const tema = localStorage.getItem('livro-caixa:tema');
-      if (tema === 'claro' || tema === 'escuro') document.documentElement.dataset.tema = tema;
-    } catch { /* sem localStorage: segue o tema do sistema */ }
+      if (tema === 'claro' || tema === 'escuro') {
+        document.documentElement.dataset.tema = tema;
+      }
+    } catch (erro) {
+      // sem localStorage: segue o tema do sistema
+    }
   </script>
 </head>
 
@@ -24,12 +28,19 @@
   <a class="pular" href="#conteudo">Pular para o conteúdo</a>
 
   <header class="capa">
-    <button type="button" class="btn-tema" id="btn-tema" aria-pressed="false">
-      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <path id="icone-tema" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
-      </svg>
-      <span id="texto-tema">Tema escuro</span>
-    </button>
+    <div class="capa-botoes">
+      <button type="button" class="btn-capa" id="btn-config" aria-label="Configurações do condomínio" title="Configurações">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+        </svg>
+      </button>
+      <button type="button" class="btn-capa" id="btn-tema" aria-label="Tema escuro" aria-pressed="false" title="Tema escuro">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+        </svg>
+      </button>
+    </div>
     <p class="marca">
       <img src="img/logo.svg" alt="" width="36" height="36">
       <span>Livro-Caixa</span>
@@ -40,202 +51,110 @@
 
   <main class="folha" id="conteudo">
 
-    <!-- 1. Dados que aparecem no cabeçalho do relatório -->
-    <section class="bloco" aria-labelledby="h-abertura">
-      <h2 id="h-abertura"><span class="folio">fl. 01</span> Termo de abertura</h2>
-      <form id="form-abertura" class="abertura" novalidate>
-        <div class="campo">
-          <label for="campo-condominio">Condomínio</label>
-          <input id="campo-condominio" name="condominio" type="text" maxlength="80" autocomplete="off">
-        </div>
-        <div class="campo">
-          <label for="campo-mes">Mês de referência</label>
-          <input id="campo-mes" name="mes" type="month" required>
-        </div>
-        <div class="campo">
-          <label for="campo-saldo">Saldo anterior (R$)</label>
-          <input id="campo-saldo" name="saldoAnterior" type="text" inputmode="decimal" aria-describedby="erro-saldo">
-          <p class="erro" id="erro-saldo"></p>
-        </div>
-        <div class="campo">
-          <label for="campo-sindico">Síndico(a)</label>
-          <input id="campo-sindico" name="sindico" type="text" maxlength="60" autocomplete="off">
-        </div>
-        <div class="campo">
-          <label for="campo-contato">Contato para dúvidas</label>
-          <input id="campo-contato" name="contato" type="text" maxlength="80" autocomplete="off">
-        </div>
-      </form>
-    </section>
-
-    <!-- 2. Resumo: saldo anterior + entradas − saídas = saldo final -->
-    <section class="bloco" aria-labelledby="h-termo">
-      <h2 id="h-termo"><span class="folio">fl. 02</span> Resumo do mês</h2>
-      <div class="resumo">
-        <dl class="termo">
-          <div class="termo-linha">
-            <dt>Saldo anterior</dt>
-            <dd id="resumo-anterior">R$ 0,00</dd>
-          </div>
-          <div class="termo-linha entrada">
-            <dt><span aria-hidden="true">(+)</span> Entradas</dt>
-            <dd id="resumo-entradas">R$ 0,00</dd>
-          </div>
-          <div class="termo-linha saida">
-            <dt><span aria-hidden="true">(−)</span> Saídas</dt>
-            <dd id="resumo-saidas">R$ 0,00</dd>
-          </div>
-          <div class="termo-linha final">
-            <dt><span aria-hidden="true">(=)</span> Saldo final</dt>
-            <dd id="resumo-final">R$ 0,00</dd>
-          </div>
-        </dl>
-        <p class="carimbo" id="carimbo">Contas em dia</p>
+    <!-- O mais importante primeiro: o saldo -->
+    <section class="painel" aria-labelledby="painel-rotulo">
+      <div class="painel-saldo">
+        <p class="painel-rotulo" id="painel-rotulo">Saldo final</p>
+        <p class="painel-valor" id="saldo-final">R$ 0,00</p>
+        <p class="painel-anterior" id="saldo-anterior">Saldo anterior: R$ 0,00</p>
       </div>
+      <p class="carimbo" id="carimbo">Contas em dia</p>
+      <dl class="painel-numeros">
+        <div>
+          <dt>Entradas</dt>
+          <dd class="entrada" id="total-entradas">R$ 0,00</dd>
+        </div>
+        <div>
+          <dt>Saídas</dt>
+          <dd class="saida" id="total-saidas">R$ 0,00</dd>
+        </div>
+        <div>
+          <dt>Taxas em dia</dt>
+          <dd id="taxas-em-dia">—</dd>
+        </div>
+      </dl>
     </section>
 
-    <!-- 3. Taxas por unidade: marcar "paga" cria a entrada sozinho -->
-    <section class="bloco" aria-labelledby="h-unidades">
-      <div class="bloco-topo">
-        <h2 id="h-unidades"><span class="folio">fl. 03</span> Taxas das unidades</h2>
-        <button type="button" class="btn" id="btn-nova-unidade">+ Cadastrar unidade</button>
+    <!-- Abas (no celular viram a barra de baixo) -->
+    <div class="barra-abas">
+      <div class="abas" role="tablist" aria-label="Partes do livro">
+        <button type="button" role="tab" id="aba-resumo" data-aba="resumo" aria-controls="painel-resumo" aria-selected="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></svg>
+          <span>Resumo</span>
+        </button>
+        <button type="button" role="tab" id="aba-lancamentos" data-aba="lancamentos" aria-controls="painel-lancamentos" aria-selected="false" tabindex="-1">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" /></svg>
+          <span>Lançamentos</span>
+        </button>
+        <button type="button" role="tab" id="aba-unidades" data-aba="unidades" aria-controls="painel-unidades" aria-selected="false" tabindex="-1">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v17M16 9h3a1 1 0 0 1 1 1v11M2 21h20M8 7h4M8 11h4M8 15h4" /></svg>
+          <span>Unidades</span>
+        </button>
+        <button type="button" role="tab" id="aba-historico" data-aba="historico" aria-controls="painel-historico" aria-selected="false" tabindex="-1">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+          <span>Histórico</span>
+        </button>
       </div>
-      <p class="placar" id="placar-unidades" aria-live="polite"></p>
-      <table class="livro unidades">
-        <caption class="sr-only">Unidades e situação da taxa do mês</caption>
-        <thead>
-          <tr>
-            <th scope="col">Unidade</th>
-            <th scope="col" class="num">Taxa</th>
-            <th scope="col">Situação</th>
-            <th scope="col"><span class="sr-only">Ações</span></th>
-          </tr>
-        </thead>
-        <tbody id="tbody-unidades"></tbody>
-      </table>
-      <p class="nota">Marcar uma unidade como paga lança a taxa nas entradas. No relatório, as taxas
-        aparecem somadas e só se diz quantas unidades estão em dia, sem identificar nenhuma.</p>
-    </section>
+      <button type="button" class="btn btn-lancar" id="btn-lancar">
+        <span aria-hidden="true">+</span> Lançar
+      </button>
+    </div>
 
-    <!-- 4. Entradas -->
-    <section class="bloco" aria-labelledby="h-entradas">
-      <div class="bloco-topo">
-        <h2 id="h-entradas"><span class="folio">fl. 04</span> Entradas</h2>
-        <button type="button" class="btn" id="btn-nova-entrada">+ Lançar entrada</button>
-      </div>
-      <table class="livro">
-        <caption class="sr-only">Entradas do mês</caption>
-        <thead>
-          <tr>
-            <th scope="col">Data</th>
-            <th scope="col">Descrição</th>
-            <th scope="col" class="num">Valor</th>
-            <th scope="col"><span class="sr-only">Ações</span></th>
-          </tr>
-        </thead>
-        <tbody id="tbody-entradas"></tbody>
-        <tfoot>
-          <tr>
-            <th scope="row" colspan="2">Total das entradas</th>
-            <td class="num entrada" id="total-entradas">R$ 0,00</td>
-            <td></td>
-          </tr>
-        </tfoot>
-      </table>
-    </section>
-
-    <!-- 5. Saídas -->
-    <section class="bloco" aria-labelledby="h-saidas">
-      <div class="bloco-topo">
-        <h2 id="h-saidas"><span class="folio">fl. 05</span> Saídas</h2>
-        <button type="button" class="btn" id="btn-nova-saida">+ Lançar saída</button>
-      </div>
-      <table class="livro">
-        <caption class="sr-only">Saídas do mês</caption>
-        <thead>
-          <tr>
-            <th scope="col">Data</th>
-            <th scope="col">Descrição</th>
-            <th scope="col">Categoria</th>
-            <th scope="col" class="num">Valor</th>
-            <th scope="col"><span class="sr-only">Ações</span></th>
-          </tr>
-        </thead>
-        <tbody id="tbody-saidas"></tbody>
-        <tfoot>
-          <tr>
-            <th scope="row" colspan="3">Total das saídas</th>
-            <td class="num saida" id="total-saidas">R$ 0,00</td>
-            <td></td>
-          </tr>
-        </tfoot>
-      </table>
-    </section>
-
-    <!-- 6. Para onde foi o dinheiro -->
-    <section class="bloco" aria-labelledby="h-categorias">
-      <h2 id="h-categorias"><span class="folio">fl. 06</span> Para onde foi o dinheiro</h2>
+    <!-- Aba: Resumo -->
+    <section class="aba-conteudo" role="tabpanel" id="painel-resumo" aria-labelledby="aba-resumo">
+      <h2><span class="folio">fl. 01</span> Para onde foi o dinheiro</h2>
       <ul class="categorias" id="lista-categorias"></ul>
-    </section>
 
-    <!-- 7. Recado que sai no relatório -->
-    <section class="bloco" aria-labelledby="h-recado">
-      <h2 id="h-recado"><span class="folio">fl. 07</span> Recado do síndico</h2>
+      <h2><span class="folio">fl. 02</span> Recado do síndico</h2>
       <div class="campo">
         <label for="campo-recado">Aparece no relatório, logo depois da introdução (opcional)</label>
-        <textarea id="campo-recado" rows="4" maxlength="600" aria-describedby="contador-recado"
+        <textarea id="campo-recado" rows="3" maxlength="600" aria-describedby="contador-recado"
           placeholder="Ex.: A limpeza da caixa d’água será no dia 12, das 8h às 12h."></textarea>
         <p class="dica" id="contador-recado">0 de 600 caracteres</p>
       </div>
-    </section>
 
-    <!-- 8. Meses fechados -->
-    <section class="bloco" aria-labelledby="h-historico">
-      <h2 id="h-historico"><span class="folio">fl. 08</span> Histórico</h2>
-      <h3 class="subtitulo-bloco" id="h-grafico">Saldo final mês a mês</h3>
-      <ul class="grafico-saldo" id="grafico-saldo" aria-labelledby="h-grafico"></ul>
-      <table class="livro historico">
-        <caption class="sr-only">Meses fechados</caption>
-        <thead>
-          <tr>
-            <th scope="col">Mês</th>
-            <th scope="col" class="num">Entradas</th>
-            <th scope="col" class="num">Saídas</th>
-            <th scope="col" class="num">Saldo final</th>
-            <th scope="col"><span class="sr-only">Relatório</span></th>
-          </tr>
-        </thead>
-        <tbody id="tbody-historico"></tbody>
-      </table>
-    </section>
-
-    <!-- 9. Publicação e cópia de segurança -->
-    <section class="bloco publicar" aria-labelledby="h-publicar">
-      <h2 id="h-publicar"><span class="folio">fl. 09</span> Termo de encerramento</h2>
-      <p>
-        Tudo conferido? Gere o relatório: é um arquivo <strong>.html</strong> único, só de leitura,
-        que abre em qualquer celular. Dá para mandar no grupo do prédio ou imprimir em PDF.
-      </p>
-      <div class="acoes-publicar">
+      <h2><span class="folio">fl. 03</span> Fechar o mês</h2>
+      <ul class="checklist" id="checklist"></ul>
+      <div class="acoes">
         <button type="button" class="btn" id="btn-baixar">Baixar relatório</button>
         <button type="button" class="btn btn-secundario" id="btn-ver">Ver relatório</button>
-      </div>
-      <div class="acoes-publicar">
         <button type="button" class="btn btn-secundario" id="btn-fechar-mes">Fechar o mês</button>
       </div>
-      <p class="nota">Fechar o mês guarda o mês no histórico e abre o seguinte com o saldo final.</p>
+      <p class="dica">O relatório é um arquivo .html único, só de leitura, que abre em qualquer celular.</p>
+    </section>
 
-      <h3 class="subtitulo-bloco">Cópia de segurança</h3>
-      <p>
-        Os dados ficam salvos só neste navegador. Salve uma cópia de vez em quando: com ela você
-        recupera tudo, inclusive o histórico, em outro computador.
-      </p>
-      <div class="acoes-publicar">
-        <button type="button" class="btn btn-secundario" id="btn-salvar-copia">Salvar cópia (.json)</button>
-        <button type="button" class="btn btn-secundario" id="btn-abrir-copia">Abrir cópia</button>
-        <input type="file" id="arquivo-copia" accept=".json,application/json" hidden>
-        <button type="button" class="btn btn-perigo" id="btn-exemplo">Restaurar exemplo</button>
+    <!-- Aba: Lançamentos -->
+    <section class="aba-conteudo" role="tabpanel" id="painel-lancamentos" aria-labelledby="aba-lancamentos" hidden>
+      <div class="ferramentas">
+        <fieldset class="segmentado" id="filtro">
+          <legend class="sr-only">Mostrar</legend>
+          <label><input type="radio" name="filtro" value="todos" checked><span>Todos</span></label>
+          <label><input type="radio" name="filtro" value="entrada"><span>Entradas</span></label>
+          <label><input type="radio" name="filtro" value="saida"><span>Saídas</span></label>
+        </fieldset>
+        <input type="search" class="busca" id="busca" placeholder="Buscar" aria-label="Buscar lançamento">
       </div>
+      <ul class="lista" id="lista-lancamentos"></ul>
+      <p class="rodape-lista" id="resumo-lista"></p>
+    </section>
+
+    <!-- Aba: Unidades -->
+    <section class="aba-conteudo" role="tabpanel" id="painel-unidades" aria-labelledby="aba-unidades" hidden>
+      <div class="ferramentas">
+        <p class="placar" id="placar-unidades"></p>
+        <button type="button" class="btn btn-secundario" id="btn-nova-unidade">+ Unidade</button>
+      </div>
+      <ul class="lista" id="lista-unidades"></ul>
+      <p class="dica">Marcar "Paga" lança a taxa nas entradas. No relatório, as taxas aparecem somadas e
+        só se diz quantas unidades estão em dia, sem identificar nenhuma.</p>
+    </section>
+
+    <!-- Aba: Histórico -->
+    <section class="aba-conteudo" role="tabpanel" id="painel-historico" aria-labelledby="aba-historico" hidden>
+      <h2 id="titulo-grafico"><span class="folio">fl. 04</span> Saldo mês a mês</h2>
+      <ul class="grafico-saldo" id="grafico-saldo" aria-labelledby="titulo-grafico"></ul>
+      <h2><span class="folio">fl. 05</span> Meses fechados</h2>
+      <ul class="lista" id="lista-historico"></ul>
     </section>
   </main>
 
@@ -244,80 +163,120 @@
     <a href="https://github.com/gustavomenacho">Gustavo Menacho</a> · condomínio e valores fictícios
   </footer>
 
-  <!-- Ficha de lançamento (entrada ou saída) -->
-  <dialog class="ficha" id="dlg-lancamento" aria-labelledby="dlg-titulo">
+  <!-- Ficha: lançamento -->
+  <dialog class="ficha" id="ficha-lancamento" aria-labelledby="titulo-lancamento">
     <form id="form-lancamento" novalidate>
-      <h2 id="dlg-titulo">Nova entrada</h2>
-
-      <div class="campo">
-        <label for="lanc-data">Data</label>
-        <input id="lanc-data" name="data" type="date" required aria-describedby="erro-data">
-        <p class="erro" id="erro-data"></p>
+      <div class="ficha-topo">
+        <button type="button" class="btn-topo" data-fechar>Cancelar</button>
+        <h2 id="titulo-lancamento">Novo lançamento</h2>
+        <button type="submit" class="btn-topo forte">Salvar</button>
       </div>
-      <div class="campo">
-        <label for="lanc-descricao">Descrição</label>
-        <input id="lanc-descricao" name="descricao" type="text" maxlength="120" required autocomplete="off"
-          aria-describedby="erro-descricao">
-        <p class="erro" id="erro-descricao"></p>
-      </div>
-      <div class="campo" id="grupo-categoria">
-        <label for="lanc-categoria">Categoria</label>
-        <input id="lanc-categoria" name="categoria" type="text" maxlength="40" list="sugestoes-categoria"
-          autocomplete="off" aria-describedby="dica-categoria erro-categoria">
-        <datalist id="sugestoes-categoria"></datalist>
-        <p class="dica" id="dica-categoria">Escolha uma sugestão ou digite uma nova.</p>
-        <p class="erro" id="erro-categoria"></p>
-      </div>
-      <div class="campo">
-        <label for="lanc-valor">Valor (R$)</label>
-        <input id="lanc-valor" name="valor" type="text" inputmode="decimal" required placeholder="0,00"
-          aria-describedby="erro-valor">
-        <p class="erro" id="erro-valor"></p>
-      </div>
-
-      <div class="ficha-acoes">
-        <button type="button" class="btn btn-secundario" id="btn-cancelar-lancamento">Cancelar</button>
-        <button type="submit" class="btn">Salvar lançamento</button>
+      <div class="ficha-corpo">
+        <fieldset class="segmentado largo">
+          <legend class="sr-only">Tipo</legend>
+          <label><input type="radio" name="tipo" value="entrada"><span>Entrada</span></label>
+          <label><input type="radio" name="tipo" value="saida" checked><span>Saída</span></label>
+        </fieldset>
+        <div class="campo">
+          <label for="lanc-descricao">Descrição</label>
+          <input id="lanc-descricao" type="text" maxlength="120" autocomplete="off" aria-describedby="erro-descricao">
+          <p class="erro" id="erro-descricao"></p>
+        </div>
+        <div class="campo">
+          <label for="lanc-valor">Valor (R$)</label>
+          <input id="lanc-valor" type="text" inputmode="decimal" placeholder="0,00" aria-describedby="erro-valor">
+          <p class="erro" id="erro-valor"></p>
+        </div>
+        <div class="campo">
+          <label for="lanc-data">Data</label>
+          <input id="lanc-data" type="date" aria-describedby="erro-data">
+          <p class="erro" id="erro-data"></p>
+        </div>
+        <div class="campo" id="grupo-categoria">
+          <label for="lanc-categoria">Categoria</label>
+          <input id="lanc-categoria" type="text" maxlength="40" list="sugestoes-categoria" autocomplete="off"
+            aria-describedby="erro-categoria">
+          <datalist id="sugestoes-categoria"></datalist>
+          <p class="erro" id="erro-categoria"></p>
+        </div>
+        <button type="button" class="btn-excluir" id="btn-excluir-lancamento" hidden>Excluir lançamento</button>
       </div>
     </form>
   </dialog>
 
-  <!-- Ficha de unidade -->
-  <dialog class="ficha" id="dlg-unidade" aria-labelledby="unidade-titulo">
+  <!-- Ficha: unidade -->
+  <dialog class="ficha" id="ficha-unidade" aria-labelledby="titulo-unidade">
     <form id="form-unidade" novalidate>
-      <h2 id="unidade-titulo">Nova unidade</h2>
-      <div class="campo">
-        <label for="unid-nome">Unidade</label>
-        <input id="unid-nome" type="text" maxlength="20" required autocomplete="off" placeholder="Ex.: 101 ou Casa 3"
-          aria-describedby="erro-unid-nome">
-        <p class="erro" id="erro-unid-nome"></p>
+      <div class="ficha-topo">
+        <button type="button" class="btn-topo" data-fechar>Cancelar</button>
+        <h2 id="titulo-unidade">Nova unidade</h2>
+        <button type="submit" class="btn-topo forte">Salvar</button>
       </div>
-      <div class="campo">
-        <label for="unid-taxa">Taxa mensal (R$)</label>
-        <input id="unid-taxa" type="text" inputmode="decimal" required placeholder="0,00"
-          aria-describedby="erro-unid-taxa">
-        <p class="erro" id="erro-unid-taxa"></p>
-      </div>
-      <div class="ficha-acoes">
-        <button type="button" class="btn btn-secundario" id="btn-cancelar-unidade">Cancelar</button>
-        <button type="submit" class="btn">Salvar unidade</button>
-      </div>
-    </form>
-  </dialog>
-
-  <!-- Confirmação genérica -->
-  <dialog class="ficha" id="dlg-confirmar" aria-labelledby="confirmar-titulo" aria-describedby="confirmar-texto">
-    <form method="dialog">
-      <h2 id="confirmar-titulo">Tem certeza?</h2>
-      <p id="confirmar-texto"></p>
-      <div class="ficha-acoes">
-        <button type="submit" value="nao" class="btn btn-secundario" autofocus>Cancelar</button>
-        <button type="submit" value="sim" class="btn btn-perigo" id="confirmar-sim">Confirmar</button>
+      <div class="ficha-corpo">
+        <div class="campo">
+          <label for="unid-nome">Unidade</label>
+          <input id="unid-nome" type="text" maxlength="20" autocomplete="off" placeholder="Ex.: 101 ou Casa 3"
+            aria-describedby="erro-unid-nome">
+          <p class="erro" id="erro-unid-nome"></p>
+        </div>
+        <div class="campo">
+          <label for="unid-taxa">Taxa mensal (R$)</label>
+          <input id="unid-taxa" type="text" inputmode="decimal" placeholder="0,00" aria-describedby="erro-unid-taxa">
+          <p class="erro" id="erro-unid-taxa"></p>
+        </div>
+        <button type="button" class="btn-excluir" id="btn-excluir-unidade" hidden>Excluir unidade</button>
       </div>
     </form>
   </dialog>
 
-  <p class="aviso" id="aviso" role="status" aria-live="polite"></p>
+  <!-- Ficha: configurações -->
+  <dialog class="ficha" id="ficha-config" aria-labelledby="titulo-config">
+    <form id="form-config" novalidate>
+      <div class="ficha-topo">
+        <button type="button" class="btn-topo" data-fechar>Cancelar</button>
+        <h2 id="titulo-config">Configurações</h2>
+        <button type="submit" class="btn-topo forte">Concluído</button>
+      </div>
+      <div class="ficha-corpo">
+        <div class="campo">
+          <label for="conf-condominio">Condomínio</label>
+          <input id="conf-condominio" type="text" maxlength="80" autocomplete="off">
+        </div>
+        <div class="campo">
+          <label for="conf-mes">Mês de referência</label>
+          <input id="conf-mes" type="month">
+        </div>
+        <div class="campo">
+          <label for="conf-saldo">Saldo anterior (R$)</label>
+          <input id="conf-saldo" type="text" inputmode="decimal" aria-describedby="erro-conf-saldo">
+          <p class="erro" id="erro-conf-saldo"></p>
+        </div>
+        <div class="campo">
+          <label for="conf-sindico">Síndico(a)</label>
+          <input id="conf-sindico" type="text" maxlength="60" autocomplete="off">
+        </div>
+        <div class="campo">
+          <label for="conf-contato">Contato para dúvidas</label>
+          <input id="conf-contato" type="text" maxlength="80" autocomplete="off">
+        </div>
+
+        <h3>Cópia de segurança</h3>
+        <p class="dica">Os dados ficam só neste navegador. Com uma cópia, você recupera tudo em outro computador.</p>
+        <div class="acoes">
+          <button type="button" class="btn btn-secundario" id="btn-salvar-copia">Salvar cópia</button>
+          <button type="button" class="btn btn-secundario" id="btn-abrir-copia">Abrir cópia</button>
+          <input type="file" id="arquivo-copia" accept=".json,application/json" hidden>
+        </div>
+        <button type="button" class="btn-excluir" id="btn-exemplo">Restaurar o exemplo</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Aviso que aparece embaixo (com "Desfazer") -->
+  <div class="aviso" id="aviso">
+    <p id="aviso-texto" role="status"></p>
+    <button type="button" id="aviso-desfazer" hidden>Desfazer</button>
+  </div>
 
   <script src="js/contas.js"></script>
   <script src="js/dados.js"></script>

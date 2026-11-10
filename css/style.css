@@ -1,14 +1,9 @@
-/* ==========================================================
-   Livro-Caixa — identidade de livro contábil:
-   capa de couro marrom com costura e letras douradas,
-   folha creme com pauta verde, margem vermelha dupla,
-   números em fonte monoespaçada.
+/* Livro-Caixa
+   Capa de couro com costura dourada, folha creme com pauta,
+   margem vermelha dupla e números em fonte monoespaçada.
+   Todas as cores ficam em variáveis: o tema escuro só troca os valores. */
 
-   TODAS as cores ficam em variáveis (tokens). O tema escuro
-   não reescreve nenhuma regra: só troca os valores dos tokens.
-   ========================================================== */
-
-/* ---------- Tema claro (padrão): a folha à luz do dia ---------- */
+/* ---------- Cores: tema claro ---------- */
 :root {
   color-scheme: light;
 
@@ -18,24 +13,24 @@
   --margem: #d9a3a0;
   --tinta: #1f2a24;
   --tinta-suave: #55605a;
-  --capa: #6b4226;          /* couro */
-  --capa-escura: #4a2c17;   /* couro na sombra / costura */
-  --dourado: #e6d39c;       /* letras douradas da pasta */
-  --claro: #fbf7ec;         /* texto sobre o couro (igual nos dois temas) */
+  --capa: #6b4226;
+  --capa-escura: #4a2c17;
+  --dourado: #e6d39c;
+  --claro: #fbf7ec;
 
   --entrada: #1d6646;
   --saida: #a3282a;
   --saldo: #1d3a6b;
+  --atencao: #8a5a00;
 
   --botao: #6b4226;
   --botao-hover: #4a2c17;
-  --acento: #6b4226;        /* texto e borda dos botões secundários */
-  --realce: var(--realce);        /* fundo ao passar o mouse */
-  --realce-perigo: var(--realce-perigo);
-  --fundo-paga: var(--fundo-paga);
-  --sombra-folha: var(--sombra-folha);
-  --listra: var(--listra);
-  --fundo-modal: rgb(43 26 14 / .6);
+  --acento: #6b4226;
+  --realce: #efe8d5;
+  --fundo-paga: #e6efe5;
+  --sombra-folha: #d8cfb6;
+  --listra: #3d5a8a;
+  --fundo-modal: rgb(43 26 14 / .55);
   --foco: #1d3a6b;
 
   --serifa: 'Fraunces', Georgia, 'Times New Roman', serif;
@@ -43,11 +38,10 @@
   --mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
 }
 
-/* ---------- Tema escuro: o livro aberto à noite ----------
-   Vale quando o sistema pede tema escuro (e a pessoa não escolheu
-   o claro no botão), ou quando ela escolhe o escuro no botão.
-   O mesmo bloco aparece duas vezes porque o CSS não deixa juntar
-   uma @media e um seletor numa regra só. */
+/* ---------- Cores: tema escuro ----------
+   Vale quando o sistema está no escuro (e a pessoa não escolheu o claro)
+   ou quando ela escolhe o escuro no botão. O bloco se repete porque o CSS
+   não junta @media e seletor numa regra só. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-tema='claro']) {
     color-scheme: dark;
@@ -62,15 +56,15 @@
     --entrada: #86cfa5;
     --saida: #f2958a;
     --saldo: #a9c1ee;
+    --atencao: #f0c36a;
     --botao: #8a5a34;
     --botao-hover: #6b4226;
     --acento: #e0b88c;
     --realce: #2f2821;
-    --realce-perigo: #3a2522;
     --fundo-paga: #1f3327;
     --sombra-folha: #0d0a08;
     --listra: #7f9bd0;
-    --fundo-modal: rgb(0 0 0 / .7);
+    --fundo-modal: rgb(0 0 0 / .65);
     --foco: #a9c1ee;
   }
 }
@@ -88,18 +82,19 @@
   --entrada: #86cfa5;
   --saida: #f2958a;
   --saldo: #a9c1ee;
+  --atencao: #f0c36a;
   --botao: #8a5a34;
   --botao-hover: #6b4226;
   --acento: #e0b88c;
   --realce: #2f2821;
-  --realce-perigo: #3a2522;
   --fundo-paga: #1f3327;
   --sombra-folha: #0d0a08;
   --listra: #7f9bd0;
-  --fundo-modal: rgb(0 0 0 / .7);
+  --fundo-modal: rgb(0 0 0 / .65);
   --foco: #a9c1ee;
 }
 
+/* ---------- Base ---------- */
 *,
 *::before,
 *::after {
@@ -136,11 +131,11 @@ a {
 
 .pular {
   position: absolute;
-  left: 1rem;
   top: -3rem;
-  z-index: 10;
-  background: var(--papel);
+  left: 1rem;
+  z-index: 30;
   padding: .5rem 1rem;
+  background: var(--papel);
   border-radius: 4px;
 }
 
@@ -148,11 +143,18 @@ a {
   top: 1rem;
 }
 
-/* ---------- Capa (cabeçalho) ---------- */
-/* Couro feito só com gradientes: brilho no alto, poros miúdos
-   e uma leve vinheta nas bordas. Nenhuma imagem extra. */
+.entrada {
+  color: var(--entrada);
+}
+
+.saida {
+  color: var(--saida);
+}
+
+/* ---------- Capa de couro ---------- */
 .capa {
   position: relative;
+  padding: 2.25rem 1rem 4.5rem;
   background:
     radial-gradient(ellipse 70% 90% at 50% 0%, rgb(255 230 190 / .13), transparent 70%),
     radial-gradient(circle at 30% 40%, rgb(0 0 0 / .07) 1px, transparent 1.5px) 0 0 / 5px 5px,
@@ -162,10 +164,9 @@ a {
   border-bottom: 6px solid var(--capa-escura);
   color: var(--claro);
   text-align: center;
-  padding: 2.25rem 1rem 4.5rem;
 }
 
-/* A costura da pasta: linha tracejada dourada, recuada da borda */
+/* a costura */
 .capa::before {
   content: '';
   position: absolute;
@@ -175,43 +176,48 @@ a {
   pointer-events: none;
 }
 
-/* Botão de tema, no canto da capa */
-.btn-tema {
+.capa-botoes {
   position: absolute;
   top: 1.25rem;
   right: 1.5rem;
   z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  gap: .4rem;
-  min-height: 2.5rem;
-  padding: .35rem .8rem;
+  display: flex;
+  gap: .5rem;
+}
+
+.btn-capa {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
   background: rgb(0 0 0 / .2);
   border: 1.5px solid rgb(230 211 156 / .6);
-  border-radius: 999px;
+  border-radius: 50%;
   color: var(--dourado);
-  font: inherit;
-  font-size: .85rem;
   cursor: pointer;
 }
 
-.btn-tema:hover {
+.btn-capa:hover {
   background: rgb(0 0 0 / .35);
 }
 
-.btn-tema[aria-pressed='true'] {
-  background: var(--dourado);
-  color: var(--capa-escura);
-  font-weight: 600;
-}
-
-.btn-tema:focus-visible {
+.btn-capa:focus-visible {
   outline-color: var(--dourado);
 }
 
-.btn-tema svg {
-  width: 1.1rem;
-  height: 1.1rem;
+.btn-capa[aria-pressed='true'] {
+  background: var(--dourado);
+  color: var(--capa-escura);
+}
+
+.btn-capa svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .marca {
@@ -246,7 +252,7 @@ a {
   font-size: 1.1rem;
 }
 
-/* ---------- Folha (conteúdo) ---------- */
+/* ---------- Folha ---------- */
 .folha {
   position: relative;
   max-width: 960px;
@@ -257,7 +263,7 @@ a {
   box-shadow: 0 1px 0 var(--sombra-folha), 0 12px 30px rgb(40 35 20 / .18);
 }
 
-/* margem vermelha dupla, como nos livros contábeis */
+/* margem vermelha dupla */
 .folha::before {
   content: '';
   position: absolute;
@@ -269,20 +275,20 @@ a {
   border-right: 1px solid var(--margem);
 }
 
-.bloco {
-  margin-bottom: 3rem;
-}
-
-.bloco h2 {
+.aba-conteudo h2 {
   display: flex;
   align-items: baseline;
   gap: .75rem;
-  margin-bottom: 1.25rem;
+  margin: 2.25rem 0 1rem;
   padding-bottom: .35rem;
   border-bottom: 3px double var(--tinta);
   font-family: var(--serifa);
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   line-height: 1.2;
+}
+
+.aba-conteudo > h2:first-child {
+  margin-top: 0;
 }
 
 .folio {
@@ -293,194 +299,74 @@ a {
   font-weight: 400;
 }
 
-.bloco-topo {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: .75rem 1rem;
-  margin-bottom: 1.25rem;
+.dica {
+  margin-top: .5rem;
+  color: var(--tinta-suave);
+  font-size: .875rem;
+}
+
+/* ---------- Painel do saldo ---------- */
+.painel {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1.5rem 2rem;
+  padding-bottom: 1.75rem;
   border-bottom: 3px double var(--tinta);
 }
 
-.bloco-topo h2 {
-  flex: 1 1 12rem;
-  margin-bottom: 0;
-  border-bottom: 0;
-}
-
-.bloco-topo .btn {
-  margin-bottom: .5rem;
-}
-
-/* ---------- Campos ---------- */
-.abertura {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
-  gap: 1.25rem 2rem;
-}
-
-.campo label {
-  display: block;
+.painel-rotulo {
   color: var(--tinta-suave);
-  font-size: .78rem;
+  font-size: .8rem;
   font-weight: 600;
   letter-spacing: .08em;
   text-transform: uppercase;
 }
 
-.campo input {
-  width: 100%;
-  min-height: 2.6rem;
-  padding: .35rem .25rem;
-  background: transparent;
-  border: 0;
-  border-bottom: 1px solid var(--tinta);
-  border-radius: 0;
-  color: var(--tinta);
-  font: inherit;
-  font-size: 1rem;
-}
-
-.campo input[inputmode='decimal'] {
+.painel-valor {
   font-family: var(--mono);
-}
-
-.campo input[aria-invalid='true'] {
-  border-bottom: 2px solid var(--saida);
-}
-
-.erro {
-  color: var(--saida);
-  font-size: .85rem;
-}
-
-.erro:empty {
-  display: none;
-}
-
-.dica,
-.nota {
-  color: var(--tinta-suave);
-  font-size: .85rem;
-}
-
-/* ---------- Botões ---------- */
-.btn {
-  min-height: 2.75rem;
-  padding: .6rem 1.1rem;
-  background: var(--botao);
-  border: 2px solid var(--botao);
-  border-radius: 4px;
-  color: var(--claro);
-  font: inherit;
+  font-size: clamp(2.2rem, 7vw, 3.4rem);
   font-weight: 600;
-  cursor: pointer;
-}
-
-.btn:hover {
-  background: var(--botao-hover);
-  border-color: var(--botao-hover);
-}
-
-.btn-secundario {
-  background: transparent;
-  border-color: var(--acento);
-  color: var(--acento);
-}
-
-.btn-secundario:hover {
-  background: var(--realce);
-  border-color: var(--acento);
-}
-
-.btn-perigo {
-  background: transparent;
-  border-color: var(--saida);
-  color: var(--saida);
-}
-
-.btn-perigo:hover {
-  background: var(--realce-perigo);
-  border-color: var(--saida);
-}
-
-#confirmar-sim {
-  background: var(--saida);
-  color: var(--papel);   /* papel claro no tema claro, escuro no tema escuro: contraste nos dois */
-}
-
-.btn-texto {
-  min-height: 2.25rem;
-  padding: .25rem .5rem;
-  background: none;
-  border: 0;
-  border-radius: 4px;
+  line-height: 1.1;
   color: var(--saldo);
-  font: inherit;
-  font-size: .875rem;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  cursor: pointer;
 }
 
-.btn-texto:hover {
-  background: var(--realce);
-}
-
-.btn-texto.excluir {
+.painel-valor.negativo {
   color: var(--saida);
 }
 
-/* ---------- Resumo ---------- */
-.resumo {
+.painel-anterior {
+  margin-top: .3rem;
+  color: var(--tinta-suave);
+  font-size: .9rem;
+}
+
+.painel-numeros {
+  grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 2rem 3rem;
-}
-
-.termo-linha {
-  display: flex;
-  justify-content: space-between;
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
-  padding: .55rem 0;
-  border-bottom: 1px solid var(--pauta);
 }
 
-.termo dd {
+.painel-numeros div {
+  padding: .75rem 1rem;
+  background: var(--realce);
+  border-radius: 10px;
+}
+
+.painel-numeros dt {
+  color: var(--tinta-suave);
+  font-size: .8rem;
+}
+
+.painel-numeros dd {
   font-family: var(--mono);
+  font-size: 1.1rem;
   font-weight: 600;
   white-space: nowrap;
 }
 
-.termo .entrada dd,
-.entrada.num {
-  color: var(--entrada);
-}
-
-.termo .saida dd,
-.saida.num {
-  color: var(--saida);
-}
-
-.termo .final {
-  border-top: 3px double var(--tinta);
-  border-bottom: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-}
-
-.termo .final dd {
-  color: var(--saldo);
-}
-
-.termo .final dd.negativo {
-  color: var(--saida);
-}
-
 .carimbo {
-  justify-self: center;
   padding: .7rem 1.1rem;
   border: 4px double currentColor;
   border-radius: 6px;
@@ -504,204 +390,361 @@ a {
   color: var(--saida);
 }
 
-/* ---------- Tabelas (o livro) ---------- */
-.livro {
-  width: 100%;
-  border-collapse: collapse;
+/* ---------- Abas (controle segmentado) ---------- */
+.barra-abas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1.75rem 0 2rem;
 }
 
-.livro th,
-.livro td {
-  padding: .6rem .5rem;
-  text-align: left;
-  vertical-align: middle;
+.abas {
+  display: flex;
+  padding: 4px;
+  background: var(--realce);
+  border-radius: 12px;
 }
 
-.livro thead th {
-  border-bottom: 2px solid var(--tinta);
+.abas [role='tab'] {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  min-height: 2.5rem;
+  padding: .4rem 1rem;
+  background: none;
+  border: 0;
+  border-radius: 9px;
   color: var(--tinta-suave);
-  font-size: .75rem;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.abas [role='tab']:hover {
+  color: var(--tinta);
+}
+
+.abas [role='tab'][aria-selected='true'] {
+  background: var(--papel);
+  color: var(--tinta);
   font-weight: 600;
-  letter-spacing: .08em;
-  text-transform: uppercase;
+  box-shadow: 0 1px 3px rgb(0 0 0 / .15);
 }
 
-.livro tbody td {
-  border-bottom: 1px solid var(--pauta);
+.abas svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.livro tbody tr:hover {
+/* ---------- Botões ---------- */
+.btn {
+  min-height: 2.75rem;
+  padding: .6rem 1.1rem;
+  background: var(--botao);
+  border: 2px solid var(--botao);
+  border-radius: 10px;
+  color: var(--claro);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: var(--botao-hover);
+  border-color: var(--botao-hover);
+}
+
+.btn-secundario {
+  background: transparent;
+  border-color: var(--acento);
+  color: var(--acento);
+}
+
+.btn-secundario:hover {
+  background: var(--realce);
+  border-color: var(--acento);
+}
+
+.btn-lancar {
+  padding-inline: 1.4rem;
+  border-radius: 999px;
+  font-size: 1.05rem;
+}
+
+.btn-texto {
+  min-height: 2.25rem;
+  padding: .25rem .5rem;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  color: var(--saldo);
+  font: inherit;
+  font-size: .9rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-texto:hover {
   background: var(--realce);
 }
 
-.livro .num {
-  text-align: right;
-  font-family: var(--mono);
-  white-space: nowrap;
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-top: 1.25rem;
 }
 
-.livro .data {
-  font-family: var(--mono);
-  font-size: .9rem;
-  white-space: nowrap;
+/* ---------- Filtro e busca ---------- */
+.ferramentas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1rem;
+  margin-bottom: 1rem;
 }
 
-.livro .categoria {
+.segmentado {
+  display: inline-flex;
+  padding: 3px;
+  background: var(--realce);
+  border: 0;
+  border-radius: 10px;
+}
+
+.segmentado label {
+  position: relative;
+  cursor: pointer;
+}
+
+.segmentado input {
+  position: absolute;
+  opacity: 0;
+}
+
+.segmentado span {
+  display: block;
+  min-width: 5rem;
+  padding: .4rem .9rem;
+  border-radius: 8px;
   color: var(--tinta-suave);
+  font-weight: 500;
+  text-align: center;
 }
 
-.livro .acoes {
-  text-align: right;
+.segmentado input:checked + span {
+  background: var(--papel);
+  color: var(--tinta);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgb(0 0 0 / .15);
+}
+
+.segmentado input:focus-visible + span {
+  outline: 3px solid var(--foco);
+  outline-offset: 1px;
+}
+
+.segmentado.largo {
+  display: flex;
+}
+
+.segmentado.largo label {
+  flex: 1;
+}
+
+.busca {
+  flex: 1 1 12rem;
+  max-width: 18rem;
+  min-height: 2.5rem;
+  padding: .4rem .9rem;
+  background: var(--realce);
+  border: 0;
+  border-radius: 10px;
+  color: var(--tinta);
+  font: inherit;
+}
+
+/* ---------- Listas (lançamentos, unidades, meses) ---------- */
+.lista {
+  list-style: none;
+}
+
+.lista > li {
+  border-bottom: 1px solid var(--pauta);
+}
+
+.linha {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: .6rem .5rem;
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* a setinha ">" das listas da Apple */
+button.linha {
+  grid-template-columns: 1fr auto 1rem;
+}
+
+button.linha::after {
+  content: '›';
+  color: var(--tinta-suave);
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+button.linha:hover {
+  background: var(--realce);
+}
+
+.linha-texto strong {
+  display: block;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.linha-texto small {
+  color: var(--tinta-suave);
+  font-size: .82rem;
+}
+
+.linha-valor {
+  font-family: var(--mono);
+  font-weight: 600;
   white-space: nowrap;
 }
 
-.livro tfoot th,
-.livro tfoot td {
-  border-top: 3px double var(--tinta);
-  font-weight: 600;
-}
-
-.livro .vazio {
-  padding: 1.25rem .5rem;
+.lista .vazio {
+  padding: 1.5rem .5rem;
   color: var(--tinta-suave);
   font-style: italic;
 }
 
-/* ---------- Categorias ---------- */
-.categorias {
+.rodape-lista {
+  margin-top: .75rem;
+  color: var(--tinta-suave);
+  font-size: .875rem;
+  text-align: right;
+}
+
+/* unidade: linha clicável + interruptor */
+.linha-unidade {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.linha-unidade .linha {
+  flex: 1;
+}
+
+.situacao {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .6rem;
+  width: 8.5rem;
+  padding-right: .5rem;
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.situacao span {
+  min-width: 4.5rem;
+  text-align: right;
+}
+
+/* interruptor no estilo do iOS */
+.interruptor {
+  position: relative;
+  flex-shrink: 0;
+  width: 2.9rem;
+  height: 1.7rem;
+  background: var(--pauta);
+  border-radius: 999px;
+  appearance: none;
+  cursor: pointer;
+  transition: background .2s;
+}
+
+.interruptor::before {
+  content: '';
+  position: absolute;
+  top: .2rem;
+  left: .2rem;
+  width: 1.3rem;
+  height: 1.3rem;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgb(0 0 0 / .3);
+  transition: transform .2s;
+}
+
+.interruptor:checked {
+  background: var(--entrada);
+}
+
+.interruptor:checked::before {
+  transform: translateX(1.2rem);
+}
+
+.placar strong {
+  font-family: var(--mono);
+}
+
+/* mês do histórico */
+.linha-mes .acoes-mes {
+  display: flex;
+  gap: .25rem;
+}
+
+/* ---------- Categorias e gráfico ---------- */
+.categorias,
+.grafico-saldo {
   display: grid;
   gap: .8rem;
   list-style: none;
 }
 
-.categorias li {
+.categorias li,
+.grafico-saldo li {
   display: grid;
-  grid-template-columns: minmax(8rem, 12rem) 1fr auto;
+  grid-template-columns: 12rem 1fr 9.5rem; /* colunas fixas: as barras ficam alinhadas */
   align-items: center;
   gap: .4rem 1rem;
 }
 
 .barra {
   height: .8rem;
-  background: var(--pauta);
-  border-radius: 2px;
   overflow: hidden;
+  background: var(--pauta);
+  border-radius: 999px;
 }
 
 .barra span {
   display: block;
   height: 100%;
   background: var(--saida);
-}
-
-.categorias .valor {
-  font-family: var(--mono);
-  font-size: .9rem;
-  text-align: right;
-  white-space: nowrap;
-}
-
-.categorias .vazio {
-  display: block;
-  color: var(--tinta-suave);
-  font-style: italic;
-}
-
-/* ---------- Textos auxiliares das seções ---------- */
-.subtitulo-bloco {
-  margin: 1.75rem 0 .75rem;
-  font-family: var(--serifa);
-  font-size: 1.1rem;
-}
-
-.bloco > .subtitulo-bloco:first-of-type {
-  margin-top: 0;
-}
-
-.bloco > .nota {
-  margin-top: .75rem;
-}
-
-.placar {
-  margin-bottom: .75rem;
-  color: var(--tinta-suave);
-}
-
-.placar strong {
-  color: var(--tinta);
-  font-family: var(--mono);
-}
-
-/* ---------- Unidades ---------- */
-.situacao label {
-  display: inline-flex;
-  align-items: center;
-  gap: .45rem;
-  min-height: 2.25rem;
-  padding: .15rem .7rem .15rem .5rem;
-  border: 1.5px solid var(--saida);
   border-radius: 999px;
-  color: var(--saida);
-  font-size: .85rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.situacao label.paga {
-  border-color: var(--entrada);
-  background: var(--fundo-paga);
-  color: var(--entrada);
-}
-
-.situacao input {
-  width: 1.05rem;
-  height: 1.05rem;
-  accent-color: var(--entrada);
-  cursor: pointer;
-}
-
-.situacao label:has(input:focus-visible) {
-  outline: 3px solid var(--foco);
-  outline-offset: 2px;
-}
-
-.situacao input:focus-visible {
-  outline: none;
-}
-
-/* ---------- Recado ---------- */
-.campo textarea {
-  width: 100%;
-  margin-top: .35rem;
-  padding: .6rem .7rem;
-  background: repeating-linear-gradient(transparent 0 1.5rem, var(--pauta) 1.5rem calc(1.5rem + 1px)) local;
-  border: 1px solid var(--tinta);
-  border-radius: 2px;
-  color: var(--tinta);
-  font: inherit;
-  line-height: 1.5rem;
-  resize: vertical;
-}
-
-/* ---------- Histórico ---------- */
-.grafico-saldo {
-  display: grid;
-  gap: .55rem;
-  margin-bottom: 1.75rem;
-  list-style: none;
-}
-
-.grafico-saldo li {
-  display: grid;
-  grid-template-columns: 12.5rem 1fr 8.5rem;
-  align-items: center;
-  gap: .4rem 1rem;
-}
-
-.grafico-saldo .mes small {
-  margin-left: .35rem;
-  color: var(--tinta-suave);
-  font-size: .75rem;
 }
 
 .grafico-saldo .barra span {
@@ -716,28 +759,255 @@ a {
   background: repeating-linear-gradient(-45deg, var(--saldo) 0 6px, var(--listra) 6px 12px);
 }
 
-.grafico-saldo .valor {
+.grafico-saldo small {
+  margin-left: .35rem;
+  color: var(--tinta-suave);
+  font-size: .75rem;
+}
+
+.valor-barra {
   font-family: var(--mono);
   font-size: .9rem;
   text-align: right;
   white-space: nowrap;
 }
 
-.grafico-saldo .negativo .valor {
-  color: var(--saida);
+.categorias .vazio {
+  display: block;
+  color: var(--tinta-suave);
+  font-style: italic;
 }
 
-/* ---------- Publicar ---------- */
-.publicar > p {
-  max-width: 60ch;
-  margin-bottom: 1rem;
+/* ---------- Checklist de fechamento ---------- */
+.checklist {
+  display: grid;
+  gap: .5rem;
+  list-style: none;
 }
 
-.acoes-publicar {
+.checklist li {
   display: flex;
   flex-wrap: wrap;
-  gap: .75rem;
-  margin-bottom: .75rem;
+  align-items: center;
+  gap: .5rem .75rem;
+  padding: .7rem 1rem;
+  background: var(--realce);
+  border-radius: 10px;
+}
+
+.checklist .icone {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  color: var(--claro);
+  font-size: .85rem;
+  font-weight: 700;
+}
+
+.checklist .feito .icone {
+  background: var(--entrada);
+  color: var(--papel);
+}
+
+.checklist .pendente .icone {
+  background: var(--atencao);
+  color: var(--papel);
+}
+
+.checklist .opcional .icone {
+  background: var(--pauta);
+  color: var(--tinta);
+}
+
+.checklist .texto {
+  flex: 1;
+}
+
+/* ---------- Campos ---------- */
+.campo label {
+  display: block;
+  margin-bottom: .25rem;
+  color: var(--tinta-suave);
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.campo input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: .45rem .75rem;
+  background: var(--papel);
+  border: 1px solid var(--pauta);
+  border-radius: 10px;
+  color: var(--tinta);
+  font: inherit;
+}
+
+.campo input[inputmode='decimal'] {
+  font-family: var(--mono);
+}
+
+.campo input[aria-invalid='true'] {
+  border: 2px solid var(--saida);
+}
+
+.campo textarea {
+  width: 100%;
+  padding: .6rem .75rem;
+  background: repeating-linear-gradient(transparent 0 1.5rem, var(--pauta) 1.5rem calc(1.5rem + 1px)) local;
+  border: 1px solid var(--pauta);
+  border-radius: 10px;
+  color: var(--tinta);
+  font: inherit;
+  line-height: 1.5rem;
+  resize: vertical;
+}
+
+.erro {
+  margin-top: .25rem;
+  color: var(--saida);
+  font-size: .85rem;
+}
+
+.erro:empty {
+  display: none;
+}
+
+/* ---------- Fichas (dialog) no estilo das "sheets" do iOS ---------- */
+.ficha {
+  width: min(30rem, calc(100% - 2rem));
+  max-height: calc(100vh - 2rem);
+  margin: auto;
+  overflow: auto;
+  background: var(--papel);
+  border: 0;
+  border-radius: 16px;
+  color: var(--tinta);
+  box-shadow: 0 20px 50px rgb(0 0 0 / .3);
+}
+
+.ficha::backdrop {
+  background: var(--fundo-modal);
+}
+
+.ficha-topo {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: .5rem .75rem;
+  background: var(--realce);
+  border-bottom: 1px solid var(--pauta);
+}
+
+.ficha-topo h2 {
+  font-family: var(--serifa);
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.btn-topo {
+  min-height: 2.75rem;
+  padding: .25rem .5rem;
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  color: var(--acento);
+  font: inherit;
+  cursor: pointer;
+  justify-self: start;
+}
+
+.btn-topo.forte {
+  font-weight: 700;
+  justify-self: end;
+}
+
+.btn-topo:hover {
+  background: var(--papel);
+}
+
+.ficha-corpo {
+  display: grid;
+  gap: 1.1rem;
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.ficha-corpo h3 {
+  margin-top: .75rem;
+  font-family: var(--serifa);
+  font-size: 1.05rem;
+}
+
+.ficha-corpo .acoes,
+.ficha-corpo .dica {
+  margin-top: 0;
+}
+
+.btn-excluir {
+  min-height: 2.75rem;
+  margin-top: .5rem;
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--pauta);
+  color: var(--saida);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-excluir:hover {
+  background: var(--realce);
+}
+
+/* ---------- Aviso (com Desfazer) ---------- */
+.aviso {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  max-width: calc(100% - 2rem);
+  padding: .6rem .6rem .6rem 1.1rem;
+  background: var(--capa-escura);
+  border-radius: 12px;
+  color: var(--claro);
+  box-shadow: 0 8px 20px rgb(0 0 0 / .25);
+  transform: translate(-50%, 1rem);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s, transform .2s;
+}
+
+.aviso.visivel {
+  transform: translate(-50%, 0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.aviso button {
+  min-height: 2.25rem;
+  padding: .25rem .8rem;
+  background: var(--dourado);
+  border: 0;
+  border-radius: 8px;
+  color: var(--capa-escura);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.aviso button:focus-visible {
+  outline-color: var(--dourado);
 }
 
 /* ---------- Rodapé ---------- */
@@ -748,74 +1018,20 @@ a {
   text-align: center;
 }
 
-/* ---------- Ficha (dialog) ---------- */
-.ficha {
-  width: min(32rem, calc(100% - 2rem));
-  margin: auto;
-  background: var(--papel);
-  border: 0;
-  border-top: 6px solid var(--capa);
-  border-radius: 4px;
-  color: var(--tinta);
-  box-shadow: 0 20px 50px rgb(0 0 0 / .3);
-}
-
-.ficha::backdrop {
-  background: var(--fundo-modal);
-}
-
-.ficha form {
-  display: grid;
-  gap: 1.1rem;
-  padding: 1.5rem;
-}
-
-.ficha h2 {
-  font-family: var(--serifa);
-  font-size: 1.4rem;
-}
-
-.ficha-acoes {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: .75rem;
-  margin-top: .25rem;
-}
-
-/* ---------- Aviso (toast) ---------- */
-.aviso {
-  position: fixed;
-  left: 50%;
-  bottom: 1.25rem;
-  z-index: 20;
-  max-width: calc(100% - 2rem);
-  padding: .65rem 1.1rem;
-  background: var(--capa-escura);
-  border-radius: 4px;
-  color: var(--claro);
-  box-shadow: 0 8px 20px rgb(0 0 0 / .25);
-  transform: translateX(-50%);
-}
-
-.aviso:empty {
-  display: none;
-}
-
-/* ==========================================================
-   Celular: a margem dupla some e cada linha da tabela
-   vira um "cartão" (sem rolagem horizontal).
-   ========================================================== */
+/* ---------- Celular ---------- */
 @media (max-width: 640px) {
+  body {
+    padding-bottom: 5rem; /* espaço para a barra de abas fixa */
+  }
+
   .capa {
     padding: 1.75rem 1.25rem 3.5rem;
   }
 
-  .btn-tema {
+  .capa-botoes {
     position: static;
-    display: flex;
-    width: fit-content;
-    margin: 0 auto 1rem;
+    justify-content: center;
+    margin-bottom: 1rem;
   }
 
   .folha {
@@ -827,144 +1043,147 @@ a {
     display: none;
   }
 
-  .resumo {
-    grid-template-columns: 1fr;
+  .painel {
+    gap: 1.25rem .75rem;
   }
 
-  .livro thead {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
+  .carimbo {
+    padding: .4rem .55rem;
+    border-width: 3px;
+    font-size: .68rem;
+    letter-spacing: .08em;
+    white-space: nowrap;
   }
 
-  .livro tbody tr {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: .1rem .75rem;
-    padding: .7rem 0;
-    border-bottom: 1px solid var(--pauta);
+  .carimbo small {
+    font-size: .6rem;
   }
 
-  .livro tbody td {
-    padding: 0;
-    border: 0;
+  .painel-numeros {
+    gap: .5rem;
   }
 
-  .livro .descricao {
-    flex: 1 1 60%;
-    order: 1;
-    font-weight: 500;
+  .painel-numeros div {
+    padding: .6rem;
   }
 
-  .livro tbody .num {
-    order: 2;
-    margin-left: auto;
+  .painel-numeros dd {
+    font-size: .9rem;
   }
 
-  .livro .data,
-  .livro .categoria {
-    order: 3;
-    color: var(--tinta-suave);
-    font-size: .82rem;
+  /* as abas viram a barra de baixo, como nos apps do iPhone */
+  .barra-abas {
+    margin: 1.25rem 0 1.5rem;
   }
 
-  .livro .categoria::before {
-    content: '· ';
+  .abas {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    justify-content: space-around;
+    padding: .35rem .25rem calc(.35rem + env(safe-area-inset-bottom));
+    background: var(--papel);
+    border-top: 1px solid var(--pauta);
+    border-radius: 0;
+    box-shadow: 0 -4px 12px rgb(0 0 0 / .08);
   }
 
-  .livro .situacao {
-    order: 3;
+  .abas [role='tab'] {
+    flex: 1;
+    flex-direction: column;
+    gap: .1rem;
+    padding: .3rem .2rem;
+    font-size: .72rem;
   }
 
-  .unidades tbody tr {
-    align-items: center;
+  .abas [role='tab'][aria-selected='true'] {
+    background: none;
+    color: var(--acento);
+    box-shadow: none;
   }
 
-  .unidades tbody .acoes {
-    flex-basis: auto;
-    margin-left: auto;
+  .abas svg {
+    width: 1.4rem;
+    height: 1.4rem;
   }
 
-  .historico tbody .num {
-    order: 3;
-    margin-left: 0;
-    font-size: .82rem;
+  .btn-lancar {
+    width: 100%;
   }
 
-  .historico tbody .num::before {
-    content: attr(data-rotulo) ' ';
-    color: var(--tinta-suave);
-    font-family: var(--sans);
+  .busca {
+    max-width: none;
   }
 
-  .historico tbody .num.saldo {
-    order: 2;
-    margin-left: auto;
-    font-size: 1rem;
+  .segmentado span {
+    min-width: 0;
+    padding-inline: .7rem;
   }
 
-  .historico tbody .num.saldo::before {
-    content: none;
-  }
-
+  .categorias li,
   .grafico-saldo li {
     grid-template-columns: 1fr auto;
   }
 
+  .categorias .barra,
   .grafico-saldo .barra {
     grid-column: 1 / -1;
     grid-row: 2;
   }
 
-  .livro .acoes {
-    order: 4;
-    flex-basis: 100%;
-    margin-left: -.5rem;
-    text-align: left;
+  .situacao {
+    width: 8rem;
   }
 
-  .livro tfoot tr {
-    display: flex;
-    justify-content: space-between;
-    border-top: 3px double var(--tinta);
-  }
-
-  .livro tfoot th,
-  .livro tfoot td {
-    padding: .6rem 0;
-    border: 0;
-  }
-
-  .livro tfoot td:empty {
-    display: none;
-  }
-
-  .categorias li {
-    grid-template-columns: 1fr auto;
-  }
-
-  .categorias .barra {
-    grid-column: 1 / -1;
-    grid-row: 2;
-  }
-
-  .acoes-publicar .btn {
+  .acoes .btn {
     flex: 1 1 100%;
+  }
+
+  /* a ficha sobe de baixo, como uma "sheet" do iOS */
+  .ficha {
+    width: 100%;
+    max-width: 100%;
+    max-height: 92vh;
+    margin: auto 0 0;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .aviso {
+    bottom: 5.5rem;
   }
 }
 
+/* ---------- Animações (só para quem não pediu menos movimento) ---------- */
 @media (prefers-reduced-motion: no-preference) {
   .ficha[open] {
-    animation: abrir-ficha .18s ease-out;
+    animation: abrir-ficha .22s ease-out;
+  }
+
+  .aba-conteudo {
+    animation: mostrar-aba .2s ease-out;
   }
 
   @keyframes abrir-ficha {
     from {
       opacity: 0;
-      transform: translateY(12px);
+      transform: translateY(24px);
     }
+  }
+
+  @keyframes mostrar-aba {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .interruptor,
+  .interruptor::before,
+  .aviso {
+    transition: none;
   }
 }

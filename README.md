@@ -25,28 +25,33 @@ Feito com **HTML, CSS e JavaScript puro**, sem frameworks, sem bibliotecas e sem
 ## 📸 Capturas de tela
 
 <p align="center">
-  <img src="docs/capturas/livro.webp" alt="Tela do síndico: capa de couro marrom com costura dourada, o nome Edifício Jacarandá, termo de abertura com os dados do condomínio e o resumo do mês com o carimbo Contas em dia" width="100%">
-  <br><em>O livro do síndico: termo de abertura e resumo do mês com o carimbo de conferência</em>
+  <img src="docs/capturas/resumo.webp" alt="Tela inicial: capa de couro, o saldo final de R$ 3.649,50 em destaque com o carimbo Contas em dia, os totais de entradas, saídas e taxas, as abas e o botão + Lançar" width="100%">
+  <br><em>O mais importante primeiro: o saldo do mês, os totais e as abas</em>
 </p>
 
 <p align="center">
-  <img src="docs/capturas/unidades.webp" alt="Taxas das unidades: sete unidades com taxa de R$ 500,00, seis marcadas como pagas e a 202 como pendente" width="100%">
-  <br><em>Taxas por unidade: marcar "Paga" lança a taxa nas entradas sozinho</em>
+  <img src="docs/capturas/lancamentos.webp" alt="Aba Lançamentos: filtro Todos, Entradas e Saídas, campo de busca e a lista de lançamentos com valores em verde e vermelho" width="100%">
+  <br><em>Lançamentos num extrato só, com filtro e busca. Tocar numa linha abre a ficha</em>
 </p>
 
 <p align="center">
-  <img src="docs/capturas/ficha.webp" alt="Ficha de nova saída aberta sobre a tabela de saídas, com data, descrição, categoria e valor" width="100%">
-  <br><em>Ficha de lançamento em um &lt;dialog&gt; nativo, com validação em português</em>
+  <img src="docs/capturas/ficha.webp" alt="Ficha de edição de um lançamento, com Cancelar, Salvar, o seletor Entrada ou Saída, os campos e o botão Excluir lançamento" width="100%">
+  <br><em>Ficha no estilo das sheets do iOS: Cancelar, Salvar e Excluir no mesmo lugar</em>
 </p>
 
 <p align="center">
-  <img src="docs/capturas/livro-escuro.webp" alt="O mesmo livro no tema escuro: capa de couro, folha grafite e números em cores claras" width="100%">
-  <br><em>Tema escuro: segue o sistema ou o botão no canto da capa</em>
+  <img src="docs/capturas/desfazer.webp" alt="Aviso Lançamento excluído com o botão Desfazer na parte de baixo da tela" width="100%">
+  <br><em>Nada de "Tem certeza?": a ação acontece e o aviso oferece Desfazer (ou Ctrl+Z)</em>
 </p>
 
 <p align="center">
-  <img src="docs/capturas/historico-escuro.webp" alt="Histórico no tema escuro, com gráfico de saldo final de junho a agosto, tabela dos meses fechados e botões de relatório e cópia de segurança" width="100%">
-  <br><em>Histórico dos meses fechados, saldo mês a mês e cópia de segurança</em>
+  <img src="docs/capturas/unidades.webp" alt="Aba Unidades: sete unidades com interruptores Paga ou Pendente" width="100%">
+  <br><em>Taxas por unidade: ligar o interruptor lança a taxa nas entradas</em>
+</p>
+
+<p align="center">
+  <img src="docs/capturas/historico-escuro.webp" alt="Aba Histórico no tema escuro, com o gráfico de saldo de junho a agosto e a lista de meses fechados" width="100%">
+  <br><em>Histórico com saldo mês a mês, no tema escuro</em>
 </p>
 
 <p align="center">
@@ -55,12 +60,12 @@ Feito com **HTML, CSS e JavaScript puro**, sem frameworks, sem bibliotecas e sem
 </p>
 
 <p align="center">
-  <img src="docs/capturas/celular-livro.webp" alt="Livro-Caixa aberto em uma tela de celular, com a capa de couro e os campos do termo de abertura" width="260">
+  <img src="docs/capturas/celular.webp" alt="Livro-Caixa no celular, com o saldo em destaque e a barra de abas embaixo" width="260">
   &nbsp;
-  <img src="docs/capturas/celular-escuro.webp" alt="Taxas das unidades no celular, no tema escuro, cada unidade em um cartão" width="260">
+  <img src="docs/capturas/celular-ficha.webp" alt="Ficha de lançamento subindo da parte de baixo da tela do celular" width="260">
   &nbsp;
-  <img src="docs/capturas/celular-relatorio.webp" alt="Relatório no celular: taxas condominiais em números, entradas e saídas em cartões" width="260">
-  <br><em>No celular, cada linha da tabela vira um cartão, sem rolagem horizontal</em>
+  <img src="docs/capturas/celular-escuro.webp" alt="Lista de lançamentos no celular, no tema escuro" width="260">
+  <br><em>No celular, as abas viram a barra de baixo e as fichas sobem da borda, como nos apps do iPhone</em>
 </p>
 
 > O Edifício Jacarandá, a síndica e todos os valores são **fictícios**.
@@ -82,7 +87,14 @@ A primeira versão deste projeto tinha duas pastas separadas, e para publicar o 
 
 | Recurso | O que faz |
 |---|---|
-| **Termo de abertura** | Nome do condomínio, mês de referência, saldo anterior, síndico e contato, editáveis direto na página |
+| **Saldo em destaque** | O saldo final aparece primeiro, grande, com o carimbo e os totais logo abaixo |
+| **Abas** | *Resumo · Lançamentos · Unidades · Histórico*, usáveis com as setas do teclado; no celular viram a barra de baixo |
+| **Um botão principal** | *+ Lançar* abre a ficha já com a escolha *Entrada / Saída* |
+| **Toque para editar** | Tocar num lançamento ou numa unidade abre a ficha; o botão de excluir fica dentro dela |
+| **Desfazer** | Excluir, fechar o mês ou trocar os dados acontece na hora, com *Desfazer* no aviso ou Ctrl+Z |
+| **Busca e filtro** | Filtra por entradas ou saídas e busca ignorando acentos ("manutencao" acha "Manutenção") |
+| **Fechar o mês com checklist** | Mostra o que falta (taxas pendentes, recado, relatório baixado) antes de fechar |
+| **Configurações** | Nome do condomínio, mês, saldo anterior, síndico e contato ficam numa ficha aberta pela engrenagem |
 | **Taxas por unidade** | Cadastro das unidades e da taxa de cada uma; marcar "Paga" lança a taxa nas entradas, e desmarcar a retira |
 | **Entradas e saídas** | Lançar, editar e excluir, com data, descrição, categoria (nas saídas) e valor |
 | **Valores do jeito brasileiro** | Aceita `50,50`, `1.234,56`, `R$ 80` e também `50.50` |
@@ -97,7 +109,7 @@ A primeira versão deste projeto tinha duas pastas separadas, e para publicar o 
 | **Cópia de segurança** | *Salvar cópia* baixa um `.json` com tudo (inclusive o histórico); *Abrir cópia* restaura em qualquer navegador |
 | **Tema claro e escuro** | Segue o tema do sistema; o botão no canto da capa troca e lembra a escolha |
 | **Salvo no navegador** | Tudo fica no `localStorage`: recarregar a página não apaga nada, e nada vai para servidor nenhum |
-| **Testes automatizados** | `testes.html` roda 40 verificações das funções de contas, dados e relatório |
+| **Testes automatizados** | `testes.html` roda 41 verificações das funções de contas, dados e relatório |
 | **Exemplo com um clique** | *Restaurar exemplo* traz de volta o Edifício Jacarandá para quem quer só conhecer |
 
 ---
@@ -121,26 +133,26 @@ npx serve .
 
 ### Fluxo do mês
 
-1. Confira o **termo de abertura** (mês e saldo anterior).
-2. Marque as **unidades** que pagaram e lance as outras **entradas** e as **saídas**.
-3. Escreva um **recado**, se houver, clique em **Baixar relatório** e envie o arquivo aos moradores.
-4. No fim do mês, clique em **Fechar o mês** e, de vez em quando, em **Salvar cópia**.
+1. Na primeira vez, preencha as **configurações** (a engrenagem na capa).
+2. Ligue as **unidades** que pagaram e use **+ Lançar** para as outras entradas e as saídas.
+3. No **Resumo**, escreva um recado, se houver, clique em **Baixar relatório** e envie o arquivo aos moradores.
+4. Quando o checklist estiver completo, clique em **Fechar o mês**. De vez em quando, salve uma **cópia de segurança**.
 
 ---
 
 ## 🗂️ Estrutura
 
 ```
-index.html          o livro do síndico: seções, fichas e confirmação (<dialog>)
+index.html          o livro do síndico: painel do saldo, abas e fichas (<dialog>)
 testes.html         testes automatizados, rodam no próprio navegador
 css/
-  style.css         identidade visual, tokens de cor dos temas claro e escuro, cartões no celular
+  style.css         identidade visual, cores dos temas claro e escuro, abas, listas e fichas
 js/
   contas.js         funções puras: centavos, leitura de valores, datas, totais, unidades, escape de HTML
   dados.js          leitura segura dos dados salvos e das cópias .json
   relatorio.js      monta o relatório público (HTML + CSS embutido, sem JavaScript)
-  app.js            estado, renderização, fichas, unidades, histórico, cópia de segurança,
-                    tema e eventos
+  app.js            estado, desenho da tela, abas, fichas, desfazer, unidades, histórico,
+                    cópia de segurança e tema
 img/
   logo.svg          logo e ícone da aba
 docs/capturas/      imagens deste README
@@ -162,7 +174,7 @@ docs/capturas/      imagens deste README
 
 **Expor o devedor → relatório só com números.** Divulgar a lista de inadimplentes para todos os vizinhos pode configurar constrangimento na cobrança. O relatório diz apenas "6 de 7 unidades em dia" e o valor em aberto. E, como listar as taxas pagas uma a uma ("Unidade 101", "Unidade 102"…) revelaria o devedor por eliminação, o relatório soma todas numa linha só: "Taxas condominiais (6 unidades)". O síndico continua vendo tudo, unidade por unidade, na tela dele.
 
-**Fechar o mês apagava tudo → histórico.** Cada mês fechado é guardado inteiro (lançamentos, unidades e recado), com `structuredClone()` para que mudanças futuras não alterem o passado. Por isso o relatório de qualquer mês antigo sai igual ao que foi enviado na época.
+**Fechar o mês apagava tudo → histórico.** Cada mês fechado é guardado inteiro (lançamentos, unidades e recado), copiado por inteiro para que mudanças futuras não alterem o passado. Por isso o relatório de qualquer mês antigo sai igual ao que foi enviado na época.
 
 **`0.1 + 0.2` → centavos inteiros.** Somar dinheiro com números decimais gera erros como `0.30000000000000004`. Todos os valores são guardados em **centavos** (`2550` em vez de `25.5`) e só viram "R$ 25,50" na hora de exibir.
 
@@ -170,21 +182,29 @@ docs/capturas/      imagens deste README
 
 **Edição pela metade → validar antes de salvar.** Se o síndico cancelasse a categoria ao editar uma despesa, a data, a descrição e o valor já tinham sido trocados. Agora a ficha valida todos os campos primeiro e só então altera o estado: ou salva tudo, ou nada.
 
-**Sequência de `prompt()` → `<dialog>` nativo.** Os lançamentos eram feitos em janelas do navegador, uma após a outra. Agora há uma ficha com `showModal()`, que já entrega foco preso no modal, fechamento com Esc, fundo inerte e retorno do foco ao botão que a abriu. A confirmação de exclusão usa outro `<dialog>`, no lugar do `confirm()`.
+**Sequência de `prompt()` → `<dialog>` nativo.** Os lançamentos eram feitos em janelas do navegador, uma após a outra. Agora há uma ficha com `showModal()`, que já entrega foco preso no modal, fechamento com Esc, fundo inerte e retorno do foco ao botão que a abriu.
 
 **Duas cópias do código → uma fonte só.** As versões do síndico e pública tinham o mesmo CSS e a mesma lógica duplicados. Agora as contas ficam em `contas.js`, usado tanto pela tela quanto pelo relatório. O relatório tem um CSS próprio e enxuto embutido, porque precisa funcionar como um arquivo único.
 
 **Scripts clássicos de propósito.** Usei `<script>` comuns em vez de módulos ES6, para que o síndico possa abrir o `index.html` com um duplo clique, sem servidor (módulos não carregam em `file://`).
 
 **Acessibilidade.**
-- Tabelas com `caption` e `scope`, títulos em ordem e o resumo em lista de definição (`<dl>`).
+- As abas seguem o padrão de acessibilidade para abas (`role="tab"`, `aria-selected`) e funcionam com as setas, Home e End.
+- Os interruptores das unidades são `<input type="checkbox" role="switch">`: o leitor de tela anuncia "Unidade 202 paga, desligado".
+- Títulos em ordem e os totais em lista de definição (`<dl>`).
 - Rótulos em todos os campos, erros ligados ao campo (`aria-describedby`, `aria-invalid`) e avisos anunciados por `role="status"`.
-- Os botões Editar e Excluir dizem qual lançamento afetam ("Excluir: Conta de água").
+- Os itens do checklist dizem "Feito", "Falta" ou "Opcional" ao leitor de tela, e não só com a cor do ícone.
 - O mês de referência deixou de ser um título clicável e virou um campo de verdade, usável pelo teclado.
 - O verde da versão antiga tinha contraste de cerca de 2,3:1; as cores novas passam de 4,5:1 sobre o papel.
 - Foco visível, link "Pular para o conteúdo" e animação só para quem não pede menos movimento.
 
-**Responsivo.** No celular, a margem dupla some e cada linha da tabela vira um cartão (descrição e valor em cima, data e categoria embaixo). A versão antiga esticava a página para 573 px numa tela de 375 px.
+**Página longa de 9 seções → painel e abas, seguindo as diretrizes da Apple.** Todas as seções tinham o mesmo peso, e o síndico rolava a página inteira para achar qualquer coisa. Usei três ideias das *Human Interface Guidelines*: **clareza** (o saldo aparece primeiro, grande), **hierarquia** (uma ação principal, *+ Lançar*) e **revelação progressiva** (o que se preenche uma vez, como o nome do condomínio, foi para as configurações). O resto virou quatro abas.
+
+**Links "Editar / Excluir" em cada linha → tocar na linha.** As linhas tinham dois links cada, o que poluía a lista. Agora a linha inteira é um `<button>` que abre a ficha, com a setinha `›` que indica isso, e excluir fica dentro da ficha, longe de um toque acidental.
+
+**"Tem certeza?" → Desfazer.** Caixas de confirmação interrompem toda hora e as pessoas acabam clicando em "Sim" sem ler. Antes de uma ação destrutiva (excluir, fechar o mês, abrir uma cópia), o app guarda uma cópia do estado. A ação acontece na hora, e o aviso oferece **Desfazer** por 7 segundos, ou Ctrl+Z, como no Mail e no Fotos.
+
+**Responsivo.** No celular, as abas viram a barra fixa de baixo, as fichas sobem da borda inferior como as *sheets* do iOS e os botões têm pelo menos 44 px de altura. A versão antiga esticava a página para 573 px numa tela de 375 px.
 
 **Chrome escurecendo o site sozinho → tema escuro desenhado.** Com o "modo escuro automático" do Chrome ligado, o navegador invertia as cores por conta própria, e o papel creme virava um marrom sem contraste. Agora o site tem um tema escuro pensado para a identidade (couro mais escuro, folha grafite, tinta creme), que segue o `prefers-color-scheme` do sistema ou a escolha feita no botão da capa. Como todas as cores são **tokens** no `:root`, o tema escuro não reescreve nenhuma regra: só troca os valores das variáveis. Um script curto no `<head>` aplica a escolha salva antes de a página aparecer, para não piscar claro e depois escuro. O relatório dos moradores é um documento para ler e imprimir, por isso declara `color-scheme: only light` e continua sempre no papel claro.
 
@@ -194,7 +214,7 @@ docs/capturas/      imagens deste README
 
 ## 🧪 Testes
 
-Abra o `testes.html` no navegador (duplo clique funciona). Ele roda **40 testes** e mostra cada resultado na tela:
+Abra o `testes.html` no navegador (duplo clique funciona). Ele roda **41 testes** e mostra cada resultado na tela:
 
 - **`lerValor`:** `"50,50"`, `"1.234,56"`, `"R$ 80"`, valores inválidos e negativos;
 - **dinheiro e datas:** formatação em reais, soma em centavos sem erro de ponto flutuante, virada de ano, fevereiro de ano bissexto;
@@ -206,7 +226,7 @@ Abra o `testes.html` no navegador (duplo clique funciona). Ele roda **40 testes*
 Não usei nenhuma biblioteca de testes: `teste()` roda uma função e anota se ela lançou erro, e `igual()` lança erro quando o resultado não é o esperado. São poucas linhas, e dá para ler e entender tudo.
 
 <p align="center">
-  <img src="docs/capturas/testes.webp" alt="Página de testes com a capa de couro e a mensagem Todos os 40 testes passaram, seguida da lista de testes" width="100%">
+  <img src="docs/capturas/testes.webp" alt="Página de testes com a capa de couro e a mensagem Todos os 41 testes passaram, seguida da lista de testes" width="100%">
 </p>
 
 ---

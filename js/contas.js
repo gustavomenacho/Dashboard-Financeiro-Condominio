@@ -1,124 +1,161 @@
-/* ==========================================================
-   contas.js — funções "puras" (sem DOM): dinheiro, datas,
-   totais e escape de texto. Usadas pelo app e pelo relatório.
-   ========================================================== */
+// contas.js
+// Funções que só fazem contas e formatação (não mexem na tela).
+// São usadas pelo app, pelo relatório e pelos testes.
 
 const MESES = [
   'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
   'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'
 ];
 
-/* Dinheiro é guardado em CENTAVOS (número inteiro).
-   Assim 0,10 + 0,20 dá 30 centavos exatos, sem o erro de
-   ponto flutuante que aconteceria com 0.1 + 0.2. */
+// Todo valor em dinheiro é guardado em centavos (número inteiro).
+// Assim evito o erro de 0.1 + 0.2 = 0.30000000000000004.
 function formatarReais(centavos) {
   return (centavos / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-/* Valor para pré-preencher um campo: 123456 -> "1.234,56" */
+// 123456 -> "1.234,56" (para preencher um campo de texto)
 function valorParaCampo(centavos) {
   return (centavos / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-/* Lê o que a pessoa digitou e devolve centavos (ou null se inválido).
-   Aceita "50,50", "1.234,56", "50.50", "R$ 80" e "1.234" (milhar). */
-function lerValor(texto, { permitirNegativo = false } = {}) {
-  let t = String(texto).replace(/R\$|\s/g, '');
+// Lê o valor digitado e devolve centavos, ou null se não for um valor.
+// Aceita "50,50", "1.234,56", "R$ 80", "50.50" e "1.234".
+function lerValor(texto, opcoes) {
+  const permitirNegativo = opcoes && opcoes.permitirNegativo;
+  let limpo = String(texto).replace('R$', '').replace(/\s/g, '');
   let negativo = false;
 
-  if (t.startsWith('-')) {
-    if (!permitirNegativo) return null;
+  if (limpo.startsWith('-')) {
+    if (!permitirNegativo) {
+      return null;
+    }
     negativo = true;
-    t = t.slice(1);
+    limpo = limpo.slice(1);
   }
 
-  if (t.includes(',')) {
-    t = t.replace(/\./g, '').replace(',', '.');      // padrão brasileiro
-  } else if (/^\d{1,3}(\.\d{3})+$/.test(t)) {
-    t = t.replace(/\./g, '');                         // "1.234" = mil duzentos e trinta e quatro
+  if (limpo.includes(',')) {
+    // padrão brasileiro: ponto separa milhar, vírgula separa centavos
+    limpo = limpo.replace(/\./g, '').replace(',', '.');
+  } else if (/^\d{1,3}(\.\d{3})+$/.test(limpo)) {
+    // "1.234" é mil duzentos e trinta e quatro
+    limpo = limpo.replace(/\./g, '');
   }
 
-  const partes = t.match(/^(\d+)(?:\.(\d{1,2}))?$/);
-  if (!partes) return null;
+  const partes = limpo.match(/^(\d+)(?:\.(\d{1,2}))?$/);
+  if (!partes) {
+    return null;
+  }
 
-  const centavos = Number(partes[1]) * 100 + Number((partes[2] || '').padEnd(2, '0'));
-  return negativo ? -centavos : centavos;
+  const reais = Number(partes[1]);
+  const centavos = Number((partes[2] || '').padEnd(2, '0'));
+  const total = reais * 100 + centavos;
+  return negativo ? -total : total;
 }
 
-/* "2025-08-02" -> "02/08/2025" */
-function formatarData(iso) {
-  const [ano, mes, dia] = String(iso).split('-');
+// "2025-08-02" -> "02/08/2025"
+function formatarData(dataIso) {
+  const [ano, mes, dia] = String(dataIso).split('-');
   return `${dia}/${mes}/${ano}`;
 }
 
-/* "2025-08" -> "agosto de 2025" */
+// "2025-08" -> "agosto de 2025"
 function nomeDoMes(mesIso) {
   const [ano, mes] = String(mesIso).split('-').map(Number);
-  return `${MESES[mes - 1] ?? '?'} de ${ano}`;
+  return `${MESES[mes - 1] || '?'} de ${ano}`;
 }
 
-/* "2025-12" -> "2026-01" */
+// "2025-12" -> "2026-01"
 function proximoMes(mesIso) {
   const [ano, mes] = mesIso.split('-').map(Number);
-  const d = new Date(ano, mes, 1); // mês do Date começa em 0, então "mes" já é o seguinte
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  if (mes === 12) {
+    return `${ano + 1}-01`;
+  }
+  return `${ano}-${String(mes + 1).padStart(2, '0')}`;
 }
 
-/* Primeiro e último dia do mês, no formato do <input type="date"> */
+// Primeiro e último dia do mês, no formato do <input type="date">
 function limitesDoMes(mesIso) {
   const [ano, mes] = mesIso.split('-').map(Number);
-  const ultimo = new Date(ano, mes, 0).getDate();
-  return { min: `${mesIso}-01`, max: `${mesIso}-${String(ultimo).padStart(2, '0')}` };
+  const ultimoDia = new Date(ano, mes, 0).getDate(); // dia 0 do mês seguinte = último dia deste
+  return {
+    min: `${mesIso}-01`,
+    max: `${mesIso}-${String(ultimoDia).padStart(2, '0')}`
+  };
 }
 
+// Devolve uma lista nova, sem alterar a original
 function ordenarPorData(lista) {
   return [...lista].sort((a, b) => a.data.localeCompare(b.data));
 }
 
 function somar(lista) {
-  return lista.reduce((total, item) => total + item.valor, 0);
+  let total = 0;
+  for (const item of lista) {
+    total += item.valor;
+  }
+  return total;
 }
 
-function calcularTotais(estado) {
-  const entradas = somar(estado.entradas);
-  const saidas = somar(estado.saidas);
-  return { entradas, saidas, saldoFinal: estado.saldoAnterior + entradas - saidas };
+function calcularTotais(mes) {
+  const entradas = somar(mes.entradas);
+  const saidas = somar(mes.saidas);
+  return {
+    entradas,
+    saidas,
+    saldoFinal: mes.saldoAnterior + entradas - saidas
+  };
 }
 
-/* [{ categoria, valor, percentual }] da maior para a menor */
+// Soma as saídas de cada categoria, da maior para a menor
 function totaisPorCategoria(saidas) {
   const total = somar(saidas);
-  const mapa = new Map();
-  saidas.forEach(({ categoria, valor }) => mapa.set(categoria, (mapa.get(categoria) || 0) + valor));
-  return [...mapa]
-    .map(([categoria, valor]) => ({ categoria, valor, percentual: total ? (valor / total) * 100 : 0 }))
-    .sort((a, b) => b.valor - a.valor);
+  const somaPorCategoria = {};
+
+  for (const saida of saidas) {
+    somaPorCategoria[saida.categoria] = (somaPorCategoria[saida.categoria] || 0) + saida.valor;
+  }
+
+  const resultado = [];
+  for (const categoria in somaPorCategoria) {
+    const valor = somaPorCategoria[categoria];
+    resultado.push({ categoria, valor, percentual: total > 0 ? (valor / total) * 100 : 0 });
+  }
+  return resultado.sort((a, b) => b.valor - a.valor);
 }
 
-/* Ordena "101, 102, 201, 1001" como número, não como texto */
+// "101, 9, 10" -> "9, 10, 101" (ordem de número, não de texto)
 function ordenarUnidades(unidades) {
   return [...unidades].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { numeric: true }));
 }
 
-/* A unidade está "paga" quando existe uma entrada ligada a ela no mês.
-   Não há um campo "pago" separado: a entrada é a única fonte de verdade. */
-function situacaoDasUnidades(estado) {
-  const lista = ordenarUnidades(estado.unidades).map((unidade) => {
-    const entrada = estado.entradas.find((e) => e.unidadeId === unidade.id);
-    return { unidade, paga: Boolean(entrada), entrada };
+// Uma unidade está paga quando existe uma entrada ligada a ela.
+// Não guardo um campo "pago" separado para as duas coisas não ficarem desencontradas.
+function situacaoDasUnidades(mes) {
+  const lista = ordenarUnidades(mes.unidades).map((unidade) => {
+    const entrada = mes.entradas.find((e) => e.unidadeId === unidade.id);
+    return { unidade, paga: Boolean(entrada) };
   });
-  const pendentes = lista.filter((s) => !s.paga);
-  return {
-    lista,
-    total: lista.length,
-    pagas: lista.length - pendentes.length,
-    pendentes: pendentes.length,
-    valorPendente: pendentes.reduce((soma, s) => soma + s.unidade.taxa, 0)
-  };
+
+  let pagas = 0;
+  let valorPendente = 0;
+  for (const item of lista) {
+    if (item.paga) {
+      pagas++;
+    } else {
+      valorPendente += item.unidade.taxa;
+    }
+  }
+
+  return { lista, total: lista.length, pagas, pendentes: lista.length - pagas, valorPendente };
 }
 
-/* Transforma texto em texto "inofensivo" para colocar dentro de HTML.
-   Ex.: <img onerror=...> vira &lt;img onerror=...&gt; e aparece como texto. */
+// Para a busca: "Manutenção" e "manutencao" viram o mesmo texto
+function normalizarTexto(texto) {
+  return String(texto).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+}
+
+// Troca os caracteres especiais do HTML para o texto aparecer como texto.
+// Ex.: "<img onerror=...>" vira "&lt;img onerror=...&gt;" e não executa nada.
 function escaparHTML(texto) {
   return String(texto)
     .replace(/&/g, '&amp;')
